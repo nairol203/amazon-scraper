@@ -1,27 +1,25 @@
 const puppeteer = require('puppeteer');
 const cheerio = require('cheerio');
 const got = require('got');
-const refreshInterval = 2.16e+7; // 6 Hours in Miliseconds
-
 const model = require('../models/prices');
 
-
 class priceAlert {
-    constructor(items) {
+    constructor(items, refreshInterval = 2.16e+7) {
         this.items = items;
+        this.refreshInterval = refreshInterval;
         this.main();
     }
 
     async main() {
         await this.checkPrice();
         setInterval(async _ => {
-            console.log('[REFRESH] Refreshing Price Alert')
+            console.log('[REFRESH] Refreshing prices')
             await this.checkPrice();
-        }, refreshInterval);
+        }, this.refreshInterval);
     };
 
     async checkPrice() {
-        console.log('[CHECK] Checking Price Alert')
+        console.log('[CHECK] Checking for new prices')
         for(let item of this.items) {
             const name = item.name;
             const price = await this.getPrice(item.url);
@@ -73,11 +71,8 @@ class priceAlert {
                         'content-type': 'application/json'
                     },
                 }).catch(e => console.log(e));
-                console.log(`[CHECK] New Price for ${name}`);
             }
-            else {
-                console.log(`[CHECK] Nothing new for ${name}`);
-            }
+            else {};
         }
     };
     
