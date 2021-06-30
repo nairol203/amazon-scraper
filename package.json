@@ -1,0 +1,19 @@
+{
+  "name": "amazon-price-alert",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^10.0.0",
+    "got": "^11.8.2",
+    "mongoose": "^5.13.0",
+    "puppeteer": "^10.1.0"
+  }
+}
