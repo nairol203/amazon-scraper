@@ -33,16 +33,18 @@ class newswire {
         article = await this.getNewArticle();
         if (!(article instanceof TypeError) && article.title) {
             this.sendArticle(article)
-        }
+        } else { console.log(1)}
         setInterval(async _ => {
             console.log('[REFRESH] Refreshing news feed for ' + this.genre);
             article = await this.getNewArticle();
-            !(article instanceof TypeError) && article.title ? this.sendArticle(article) : console.log(article.message);
+            if (!(article instanceof TypeError) && article.title) {
+                this.sendArticle(article)
+            }
         }, refreshInterval);
     }
 
     sendArticle(article) {
-        console.log(`[NEW] ${this.genre}: ${article.title} (${article.link})`);
+        // console.log(`[NEW] ${this.genre}: ${article.title} (${article.link})`);
         article.tags = '' + article.tags.map(tag => '`' + tag + '` ');
         const embed = {
             'content': '<@&816211689136848907>',
