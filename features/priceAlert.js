@@ -60,7 +60,7 @@ class priceAlert {
                         },
                         'color': 15258703,
                         'footer': {
-                            'icon_url': 'https://cdn.discordapp.com/avatars/822905167589539850/a5e8e768452672b84c8a94cf6f3c99d0.webp?size=128',
+                            'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
                             'text': 'Price Alert | Contact @florian#0002 for help',
                         }
                     }]

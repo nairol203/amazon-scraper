@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const mongo = require('./mongo');
 const newswire = require('./features/newswire');
-const priceAlert = require('./features/priceAltert');
+const priceAlert = require('./features/priceAlert');
 
 (async () => {
     await mongo(); 
