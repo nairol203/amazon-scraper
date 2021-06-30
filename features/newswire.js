@@ -13,7 +13,7 @@ const genres = {
 const puppeteer = require('puppeteer');
 const request = require('got');
 const mainLink = 'https://graph.rockstargames.com/';
-const refreshInterval = 7.2e+6; // 2 hours in milliseconds. If you would like to change it (http://www.unitconversion.org/time/seconds-to-milliseconds-conversion.html)
+const refreshInterval = 3.6e+6; // 2 hours in milliseconds. If you would like to change it (http://www.unitconversion.org/time/seconds-to-milliseconds-conversion.html)
 let newsHash;
 const model = require('../models/newswire');
 
