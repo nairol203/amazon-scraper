@@ -1,0 +1,105 @@
+const puppeteer = require('puppeteer');
+const cheerio = require('cheerio');
+const got = require('got');
+const refreshInterval = 2.16e+7; // 6 Hours in Miliseconds
+
+const model = require('../models/prices');
+
+
+class priceAlert {
+    constructor(items) {
+        this.items = items;
+        this.main();
+    }
+
+    async main() {
+        await this.checkPrice();
+        setInterval(async _ => {
+            console.log('[REFRESH] Refreshing Price Alert')
+            await this.checkPrice();
+        }, refreshInterval);
+    };
+
+    async checkPrice() {
+        console.log('[CHECK] Checking Price Alert')
+        for(let item of this.items) {
+            const name = item.name;
+            const price = await this.getPrice(item.url);
+            const savedPrice = await model.findOne({ productName: name }).catch(e => console.log(e));
+            if (savedPrice?.productPrice !== price) {
+                await model.findOneAndUpdate(
+                    {
+                        productName: name,
+                    },
+                    {
+                        procutName: name,
+                        productPrice: price,
+                    },
+                    {
+                        upsert: true,
+                        new: true,
+                    }
+                ).catch(e => console.log(e));
+                const embed = {
+                    'content': '<@&859771979845337098>',
+                    'embeds': [{
+                        'title': 'Amazon Price Alert',
+                        'description': `Neuer Preis für [${name}](${item.url})`,
+                        'fields': [
+                            {
+                                'name': 'Alter Preis',
+                                'value': `${savedPrice?.productPrice}`,
+                                'inline': true,
+                            },
+                            {
+                                'name': 'Neuer Preis',
+                                'value': `${price}`,
+                                'inline': true,
+                            },
+                        ],
+                        'thumbnail': {
+                            'url': item.img_url,
+                        },
+                        'color': 15258703,
+                        'footer': {
+                            'icon_url': 'https://cdn.discordapp.com/avatars/822905167589539850/a5e8e768452672b84c8a94cf6f3c99d0.webp?size=128',
+                            'text': 'Price Alert | Contact @florian#0002 for help',
+                        }
+                    }]
+                }
+                got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
+                    body: JSON.stringify(embed),
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                }).catch(e => console.log(e));
+                console.log(`[CHECK] New Price for ${name}`);
+            }
+            else {
+                console.log(`[CHECK] Nothing new for ${name}`);
+            }
+        }
+    };
+    
+    async getPrice(url) {
+        const browser = await puppeteer.launch();
+    
+        const page = await browser.newPage();
+        await page.goto(url);
+    
+        const pageData = await page.evaluate(() => {
+            return {
+                html: document.documentElement.innerHTML,
+            };
+        });
+    
+        const $ = cheerio.load(pageData.html)
+        
+        const element = $('#priceblock_ourprice');
+        
+        await browser.close();
+        return element.text();
+    };
+};
+
+module.exports = priceAlert;
