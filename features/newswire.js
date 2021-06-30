@@ -33,7 +33,7 @@ class newswire {
         article = await this.getNewArticle();
         if (!(article instanceof TypeError) && article.title) {
             this.sendArticle(article)
-        } else { console.log(1)}
+        }
         setInterval(async _ => {
             console.log('[REFRESH] Refreshing news feed for ' + this.genre);
             article = await this.getNewArticle();
