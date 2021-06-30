@@ -147,8 +147,12 @@ async function getHashToken() {
     return new Promise(async (res, rej) => {
         try {
             const browser = await puppeteer.launch({
-                headless: true
-            });
+                headless: true,
+                args: [
+                  '--no-sandbox',
+                  '--disable-setuid-sandbox',
+                ],
+              });
             const page = await browser.newPage();
             await page.setRequestInterception(true);
             page.on('request', interceptedRequest => {
