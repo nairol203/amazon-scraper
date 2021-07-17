@@ -23,7 +23,7 @@ class priceAlert {
         for(let item of this.items) {
             const name = item.name;
             const price = await this.getPrice(item.url);
-            if (price.startsWith('1')) return;
+            if (price.startsWith('1')) continue;
             const savedPrice = await model.findOne({ productName: name }).catch(e => console.log(e));
             if (savedPrice?.productPrice !== price) {
                 await model.findOneAndUpdate(
