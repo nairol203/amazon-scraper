@@ -4,7 +4,7 @@ const got = require('got');
 const model = require('../models/prices');
 
 class priceAlert {
-    constructor(items, refreshInterval = 2.16e+7) {
+    constructor(items, refreshInterval = 3600000) {
         this.items = items;
         this.refreshInterval = refreshInterval;
         this.main();
