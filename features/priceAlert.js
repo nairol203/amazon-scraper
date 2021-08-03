@@ -97,6 +97,7 @@ class priceAlert {
         const $ = cheerio.load(pageData.html)
         
         const element = $('#priceblock_ourprice');
+        console.log(element.text())
         
         await browser.close();
         return element.text();
