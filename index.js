@@ -53,6 +53,7 @@ async function checkPrice(url) {
 }
 
 async function updateDatabase(productName, newPrice) {
+    if (isNaN(newPrice)) return console.log(`Couln't check db for ${productName}`);
     const savedItem = await Model.findOne({ productName });
     if (savedItem?.productPrice != newPrice) {
         await Model.findOneAndUpdate(
