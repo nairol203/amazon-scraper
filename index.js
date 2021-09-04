@@ -27,7 +27,7 @@ const urls = [
 
 mongoose.connect(mongoPath);
 
-setInterval(() => {
+// setInterval(() => {
     console.log('Checking prices...')
     urls.forEach(async ({ name, url, img_url }) => {
         try {
@@ -42,7 +42,7 @@ setInterval(() => {
         }
     }); 
     console.log('Checked prices - see you in 6 hours')
-}, interval);
+// }, interval);
 
 async function checkPrice(url) {
     try {
