@@ -1,4 +1,3 @@
-const axios = require('axios');
 const got = require('got');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
@@ -25,7 +24,7 @@ const urls = [
     }
 ];
 
-setInterval(async () => {
+(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -37,11 +36,16 @@ setInterval(async () => {
     }));
     mongoose.connection.close();
     console.log('Checked prices - see you in 6 hours');
-}, interval);
+})();
 
 async function checkPrice(url) {
-    const { data } = await axios(url);
-    const $ = cheerio.load(data);
+    const request = await got('https://api.webscrapingapi.com/v1', {
+        searchParams: {
+            api_key: 'PUQeLnCBBdeYNfKzsoTkcEokLX5lGep6',
+            url
+        }
+    });
+    const $ = cheerio.load(request.body);
     const element = $('#priceblock_ourprice');
     const scrapedPriceString = element.text();
     const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
