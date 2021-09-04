@@ -5,7 +5,7 @@ const Model = require('./models/prices');
 
 const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority'
 const desiredPrice = 10;
-const interval = 2.16e+7; // 6 Stunden
+const interval = 3.6e+6; // 6 Stunden
 const urls = [
     {
         name: 'Pringles Original 6er Pack',
@@ -24,7 +24,7 @@ const urls = [
     }
 ];
 
-(async () => {
+setTimeout(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -36,20 +36,24 @@ const urls = [
     }));
     mongoose.connection.close();
     console.log('Checked prices - see you in 6 hours');
-})();
+}, interval);
 
 async function checkPrice(url) {
-    const request = await got('https://api.webscrapingapi.com/v1', {
-        searchParams: {
-            api_key: 'PUQeLnCBBdeYNfKzsoTkcEokLX5lGep6',
-            url
-        }
-    });
-    const $ = cheerio.load(request.body);
-    const element = $('#priceblock_ourprice');
-    const scrapedPriceString = element.text();
-    const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
-    return scrapedPrice;
+    try {
+        const request = await got('https://api.webscrapingapi.com/v1', {
+            searchParams: {
+                api_key: 'PUQeLnCBBdeYNfKzsoTkcEokLX5lGep6',
+                url
+            }
+        });
+        const $ = cheerio.load(request.body);
+        const element = $('#priceblock_ourprice');
+        const scrapedPriceString = element.text();
+        const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
+        return scrapedPrice;
+    } catch(error) {
+        console.log('Error occured, trying again in 1 hour')
+    }
 }
 
 async function updateDatabase(productName, newPrice) {
