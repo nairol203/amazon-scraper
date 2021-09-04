@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const Model = require('./models/prices');
 
 const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority'
-const desiredPrice = 10;
+const desiredPrice = 20;
 const interval = 3.6e+6; // 6 Stunden
 const urls = [
     {
