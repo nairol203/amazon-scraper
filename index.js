@@ -30,108 +30,73 @@ mongoose.connect(mongoPath);
 // setInterval(() => {
     console.log('Checking prices...')
     urls.forEach(async ({ name, url, img_url }) => {
-        try {
-            const price = await checkPrice(url);
-            const dbUpdate = await updateDatabase(name, price);
-            if (dbUpdate && price < desiredPrice) {
-                await sendWebhook(name, price, img_url);
-            }
-        } catch (error) {
-            sendError(error);
-            throw error;
+        const price = await checkPrice(url);
+        const dbUpdate = await updateDatabase(name, price);
+        if (dbUpdate && price < desiredPrice) {
+            await sendWebhook(name, price, img_url);
         }
     }); 
     console.log('Checked prices - see you in 6 hours')
 // }, interval);
 
 async function checkPrice(url) {
-    try {
-        const { data } = await axios(url);
-        const $ = cheerio.load(data);
-        const element = $('#priceblock_ourprice');
-        const scrapedPriceString = element.text();
-        const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
-        return scrapedPrice;
-    } catch (error) {
-        sendError(error);
-        throw error;
-    }
+    const { data } = await axios(url);
+    const $ = cheerio.load(data);
+    const element = $('#priceblock_ourprice');
+    const scrapedPriceString = element.text();
+    const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
+    return scrapedPrice;
 }
 
 async function updateDatabase(productName, newPrice) {
-    try {
-        const savedItem = await Model.findOne({ productName });
-        if (savedItem?.productPrice != newPrice) {
-            await Model.findOneAndUpdate(
-                {
-                    productName,
-                },
-                {
-                    productName,
-                    productPrice: newPrice,
-                    lastUpdate: new Date()
-                },
-                {
-                    new: true,
-                    upsert: true
-                }
-            );
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        sendError(error);
-        throw error;
+    const savedItem = await Model.findOne({ productName });
+    if (savedItem?.productPrice != newPrice) {
+        await Model.findOneAndUpdate(
+            {
+                productName,
+            },
+            {
+                productName,
+                productPrice: newPrice,
+                lastUpdate: new Date()
+            },
+            {
+                new: true,
+                upsert: true
+            }
+        );
+        return true;
+    } else {
+        return false;
     }
 }
 
 function sendWebhook(name, price, img_url) {
-    try {
-        got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
-            body: JSON.stringify({
-                'content': '<@&859771979845337098>',
-                'embeds': [{
-                    'title': 'Amazon Price Alert',
-                    'description': `Der Preis von **${name}** ist unter den Wunschpreis von ${desiredPrice}€ gefallen!`,
-                    'fields': [
-                        {
-                            'name': 'Aktueller Preis',
-                            'value': `${price}€`,
-                            'inline': true,
-                        },
-                    ],
-                    'thumbnail': {
-                        'url': img_url,
+    got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
+        body: JSON.stringify({
+            'content': '<@&859771979845337098>',
+            'embeds': [{
+                'title': 'Amazon Price Alert',
+                'description': `Der Preis von **${name}** ist unter den Wunschpreis von ${desiredPrice}€ gefallen!`,
+                'fields': [
+                    {
+                        'name': 'Aktueller Preis',
+                        'value': `${price}€`,
+                        'inline': true,
                     },
-                    'color': 15258703,
-                    'footer': {
-                        'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
-                        'text': 'Price Alert | Contact @florian#0002 for help',
-                    }
-                }]
-            }),
-            headers: {
-                'content-type': 'application/json'
-            },
-        })
-    } catch (error) {
-        sendError(error);
-        throw error;
-    }
-}
-
-function sendError(error) {
-    try {
-        got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
-            body: JSON.stringify({
-                'content': `Error occured while running price check\n\`${error}\``,
-            }),
-            headers: {
-                'content-type': 'application/json'
-            },
-        })
-    } catch (error) {
-        throw error;
-    }
+                ],
+                'thumbnail': {
+                    'url': img_url,
+                },
+                'color': 15258703,
+                'footer': {
+                    'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
+                    'text': 'Price Alert | Contact @florian#0002 for help',
+                }
+            }]
+        }),
+        headers: {
+            'content-type': 'application/json'
+        },
+    })
 }
