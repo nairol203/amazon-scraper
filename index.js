@@ -25,7 +25,7 @@ const urls = [
     }
 ];
 
-setInterval(async () => {
+(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -37,7 +37,7 @@ setInterval(async () => {
     }));
     mongoose.connection.close();
     console.log('Checked prices - see you in 6 hours');
-}, interval);
+})();
 
 async function checkPrice(url) {
     const { data } = await axios(url);
