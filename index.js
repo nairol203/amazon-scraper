@@ -25,18 +25,18 @@ const urls = [
     }
 ];
 
-mongoose.connect(mongoPath);
-
-setInterval(() => {
-    console.log('Checking prices...')
-    urls.forEach(async ({ name, url, img_url }) => {
+setInterval(async () => {
+    console.log('Checking prices...');
+    mongoose.connect(mongoPath);
+    await Promise.all(urls.map(async ({ name, url, img_url }) => {
         const price = await checkPrice(url);
         const dbUpdate = await updateDatabase(name, price);
         if (dbUpdate && price < desiredPrice) {
             await sendWebhook(name, price, img_url);
         }
-    }); 
-    console.log('Checked prices - see you in 6 hours')
+    }));
+    mongoose.connection.close();
+    console.log('Checked prices - see you in 6 hours');
 }, interval);
 
 async function checkPrice(url) {
