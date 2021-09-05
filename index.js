@@ -30,7 +30,7 @@ const urls = [
     }
 ];
 
-setInterval(async () => {
+(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -39,7 +39,7 @@ setInterval(async () => {
         await updateDatabase(name, price, url, img_url, retrys);
     }));
     // mongoose.connection.close();
-}, interval);
+})();
 
 async function checkPrice(url) {
     try {
@@ -101,11 +101,11 @@ function sendWebhook(name, price, url, img_url) {
             'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
-                'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${desiredPrice}€ gefallen!`,
+                'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(desiredPrice)} gefallen!`,
                 'fields': [
                     {
                         'name': 'Aktueller Preis',
-                        'value': `${price}€`,
+                        'value': `${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(price)}`,
                         'inline': true,
                     },
                 ],
