@@ -5,6 +5,10 @@ const prices = mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	productUrl: {
+		type: String,
+		required: true,
+	},
 	productPrice: {
 		type: Number,
 		required: true,

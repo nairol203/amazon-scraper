@@ -80,6 +80,7 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
             },
             {
                 productName,
+                productUrl: url,
                 productPrice: newPrice,
                 lastUpdate: new Date()
             },
