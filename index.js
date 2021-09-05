@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const Model = require('./models/prices');
 
 const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority'
-const desiredPrice = 20;
-const interval = 3.6e+6; // 6 Stunden
+const desiredPrice = 10;
+const maxRetrys = 10;
+const interval = 3.6e+6; // 1 Stunde
 const urls = [
     {
         name: 'Pringles Original 6er Pack',
@@ -21,22 +22,24 @@ const urls = [
         name: 'Pringles Sour Cream & Onion 6er Pack',
         url: 'https://amazon.de/dp/B074MZ445W',
         img_url: 'https://m.media-amazon.com/images/I/81hqrQsy4VS._SL1500_.jpg'
+    },
+    {
+        name: 'Pringles Hot & Spicy 6er Pack',
+        url: 'https://www.amazon.de/dp/B07MBT14B2',
+        img_url: 'https://m.media-amazon.com/images/I/817QydVRFWS._SL1500_.jpg'
     }
 ];
 
-setTimeout(async () => {
+(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
+        let retrys = 0;
         const price = await checkPrice(url);
-        const dbUpdate = await updateDatabase(name, price);
-        if (dbUpdate && price < desiredPrice) {
-            await sendWebhook(name, price, img_url);
-        }
+        await updateDatabase(name, price, url, img_url, retrys);
     }));
-    mongoose.connection.close();
-    console.log('Checked prices - see you in 6 hours');
-}, interval);
+    // mongoose.connection.close();
+})();
 
 async function checkPrice(url) {
     try {
@@ -51,13 +54,24 @@ async function checkPrice(url) {
         const scrapedPriceString = element.text();
         const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
         return scrapedPrice;
-    } catch(error) {
-        console.log('Error occured, trying again in 1 hour')
+    } catch (error) {
+        return NaN
     }
 }
 
-async function updateDatabase(productName, newPrice) {
-    if (isNaN(newPrice)) return console.log(`Couln't check db for ${productName}`);
+async function updateDatabase(productName, newPrice, url, img_url, retrys) {
+    if (isNaN(newPrice)) {
+        if (retrys < maxRetrys) {
+            retrys = retrys + 1;
+            const newPrice = await checkPrice(url);
+            updateDatabase(productName, newPrice, url, img_url, retrys)
+            return;
+        } else {
+            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${productName}`)
+            return true;
+        }
+    }
+    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${productName}`)
     const savedItem = await Model.findOne({ productName });
     if (savedItem?.productPrice != newPrice) {
         await Model.findOneAndUpdate(
@@ -74,19 +88,20 @@ async function updateDatabase(productName, newPrice) {
                 upsert: true
             }
         );
-        return true;
+        newPrice < desiredPrice && await sendWebhook(productName, newPrice, url, img_url);
+        return true
     } else {
-        return false;
+        return true; 
     }
 }
 
-function sendWebhook(name, price, img_url) {
+function sendWebhook(name, price, url, img_url) {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
             'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
-                'description': `Der Preis von **${name}** ist unter den Wunschpreis von ${desiredPrice}€ gefallen!`,
+                'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${desiredPrice}€ gefallen!`,
                 'fields': [
                     {
                         'name': 'Aktueller Preis',
