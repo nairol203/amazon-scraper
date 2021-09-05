@@ -30,7 +30,7 @@ const urls = [
     }
 ];
 
-(async () => {
+setInterval(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -39,7 +39,7 @@ const urls = [
         await updateDatabase(name, price, url, img_url, retrys);
     }));
     // mongoose.connection.close();
-})();
+}, interval);
 
 async function checkPrice(url) {
     try {
