@@ -30,7 +30,7 @@ const urls = [
     }
 ];
 
-setInterval(async () => {
+(async () => {
     console.log('Checking prices...');
     mongoose.connect(mongoPath);
     await Promise.all(urls.map(async ({ name, url, img_url }) => {
@@ -39,7 +39,7 @@ setInterval(async () => {
         await updateDatabase(name, price, url, img_url, retrys);
     }));
     // mongoose.connection.close();
-}, interval);
+})();
 
 async function checkPrice(url) {
     try {
@@ -89,7 +89,8 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
                 upsert: true
             }
         );
-        newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) < 0.5 && await sendWebhook(productName, newPrice, url, img_url);
+        console.log(savedItem?.productPrice, newPrice, Math.abs((savedItem?.productPrice || 0) - newPrice), Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5)
+        newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5 && await sendWebhook(productName, newPrice, url, img_url);
         return true
     } else {
         return true; 
@@ -99,7 +100,7 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
 function sendWebhook(name, price, url, img_url) {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
-            'content': '<@&859771979845337098>',
+            // 'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
                 'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(desiredPrice)} gefallen!`,
