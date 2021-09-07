@@ -30,7 +30,19 @@ const urls = [
     }
 ];
 
-const checkPrice = async (url) => {
+(async () => {
+    await mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
+    setTimeout(async () => {
+        console.log('Checking prices...');
+        for (let { name, url, img_url } of urls) {
+            let retrys = 0;
+            const price = await checkPrice(url);
+            await updateDatabase(name, price, url, img_url, retrys);
+        };
+    }, interval);
+})();
+
+async function checkPrice(url) {
     try {
         const request = await got('https://api.webscrapingapi.com/v1', {
             searchParams: {
@@ -48,7 +60,7 @@ const checkPrice = async (url) => {
     }
 }
 
-const updateDatabase = async (name, newPrice, url, img_url, retrys) => {
+async function updateDatabase(name, newPrice, url, img_url, retrys) {
     if (isNaN(newPrice)) {
         if (retrys < maxRetrys) {
             retrys = retrys + 1;
@@ -71,6 +83,7 @@ const updateDatabase = async (name, newPrice, url, img_url, retrys) => {
             {
                 name,
                 url,
+                img_url,
                 price: newPrice,
                 date: now,
                 $push: {
@@ -94,10 +107,10 @@ const updateDatabase = async (name, newPrice, url, img_url, retrys) => {
     }
 }
 
-const sendWebhook = (name, price, url, img_url) => {
+function sendWebhook(name, price, url, img_url) {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
-            // 'content': '<@&859771979845337098>',
+            'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
                 'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(desiredPrice)} gefallen!`,
@@ -123,14 +136,3 @@ const sendWebhook = (name, price, url, img_url) => {
         }
     });
 }
-
-mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
-
-(async () => {
-    console.log('Checking prices...');
-    for (let { name, url, img_url } of urls) {
-        let retrys = 0;
-        const price = await checkPrice(url);
-        await updateDatabase(name, price, url, img_url, retrys);
-    };
-})();

@@ -21,6 +21,7 @@ const prices = mongoose.Schema({
 const product = mongoose.Schema({
 	name: reqString,
 	url: reqString,
+	img_url: reqString,
 	date: reqDate,
 	price: reqNumber,
 	prices: [prices]
