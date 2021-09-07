@@ -89,7 +89,6 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
                 upsert: true
             }
         );
-        console.log(savedItem?.productPrice, newPrice, Math.abs((savedItem?.productPrice || 0) - newPrice), Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5)
         newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5 && await sendWebhook(productName, newPrice, url, img_url);
         return true
     } else {
