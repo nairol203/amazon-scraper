@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const mongoose = require('mongoose');
 const Model = require('./models/prices');
 
-const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority'
+const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority';
 const desiredPrice = 10;
 const maxRetrys = 10;
 const interval = 3.6e+6; // 1 Stunde
@@ -30,18 +30,18 @@ const urls = [
     }
 ];
 
+mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
+
 setInterval(async () => {
     console.log('Checking prices...');
-    mongoose.connect(mongoPath);
-    await Promise.all(urls.map(async ({ name, url, img_url }) => {
+    for (let { name, url, img_url } of urls) {
         let retrys = 0;
         const price = await checkPrice(url);
         await updateDatabase(name, price, url, img_url, retrys);
-    }));
-    // mongoose.connection.close();
+    };
 }, interval);
 
-async function checkPrice(url) {
+const checkPrice = async (url) => {
     try {
         const request = await got('https://api.webscrapingapi.com/v1', {
             searchParams: {
@@ -55,23 +55,23 @@ async function checkPrice(url) {
         const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
         return scrapedPrice;
     } catch (error) {
-        return NaN
+        return NaN;
     }
 }
 
-async function updateDatabase(productName, newPrice, url, img_url, retrys) {
+const updateDatabase = async (productName, newPrice, url, img_url, retrys) => {
     if (isNaN(newPrice)) {
         if (retrys < maxRetrys) {
             retrys = retrys + 1;
             const newPrice = await checkPrice(url);
-            updateDatabase(productName, newPrice, url, img_url, retrys)
+            updateDatabase(productName, newPrice, url, img_url, retrys);
             return;
         } else {
-            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${productName}`)
+            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${productName}`);
             return true;
         }
     }
-    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${productName}`)
+    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${productName}`);
     const savedItem = await Model.findOne({ productName });
     if (savedItem?.productPrice != newPrice) {
         await Model.findOneAndUpdate(
@@ -90,13 +90,13 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
             }
         );
         newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5 && await sendWebhook(productName, newPrice, url, img_url);
-        return true
+        return true;
     } else {
         return true; 
     }
 }
 
-function sendWebhook(name, price, url, img_url) {
+const sendWebhook = (name, price, url, img_url) => {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
             'content': '<@&859771979845337098>',
@@ -107,21 +107,21 @@ function sendWebhook(name, price, url, img_url) {
                     {
                         'name': 'Aktueller Preis',
                         'value': `${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(price)}`,
-                        'inline': true,
+                        'inline': true
                     },
                 ],
                 'thumbnail': {
-                    'url': img_url,
+                    'url': img_url
                 },
                 'color': 15258703,
                 'footer': {
                     'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
-                    'text': 'Price Alert | Contact @florian#0002 for help',
+                    'text': 'Price Alert | Contact @florian#0002 for help'
                 }
             }]
         }),
         headers: {
             'content-type': 'application/json'
-        },
-    })
+        }
+    });
 }
