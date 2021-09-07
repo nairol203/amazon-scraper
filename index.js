@@ -1,7 +1,7 @@
 const got = require('got');
 const cheerio = require('cheerio');
 const mongoose = require('mongoose');
-const Model = require('./models/prices');
+const Model = require('./models/pringles');
 
 const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority';
 const desiredPrice = 10;
@@ -30,17 +30,6 @@ const urls = [
     }
 ];
 
-mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
-
-setInterval(async () => {
-    console.log('Checking prices...');
-    for (let { name, url, img_url } of urls) {
-        let retrys = 0;
-        const price = await checkPrice(url);
-        await updateDatabase(name, price, url, img_url, retrys);
-    };
-}, interval);
-
 const checkPrice = async (url) => {
     try {
         const request = await got('https://api.webscrapingapi.com/v1', {
@@ -59,37 +48,46 @@ const checkPrice = async (url) => {
     }
 }
 
-const updateDatabase = async (productName, newPrice, url, img_url, retrys) => {
+const updateDatabase = async (name, newPrice, url, img_url, retrys) => {
     if (isNaN(newPrice)) {
         if (retrys < maxRetrys) {
             retrys = retrys + 1;
             const newPrice = await checkPrice(url);
-            updateDatabase(productName, newPrice, url, img_url, retrys);
+            updateDatabase(name, newPrice, url, img_url, retrys);
             return;
         } else {
-            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${productName}`);
+            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${name}`);
             return true;
         }
     }
-    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${productName}`);
-    const savedItem = await Model.findOne({ productName });
-    if (savedItem?.productPrice != newPrice) {
+    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
+    const savedItem = await Model.findOne({ name });
+    if (savedItem?.price != newPrice) {
+        const now = new Date();
         await Model.findOneAndUpdate(
             {
-                productName,
+                name,
             },
             {
-                productName,
-                productUrl: url,
-                productPrice: newPrice,
-                lastUpdate: new Date()
+                name,
+                url,
+                price: newPrice,
+                date: now,
+                $push: {
+                    'prices': [
+                        {
+                            price: newPrice,
+                            date: now
+                        }
+                    ]
+                }
             },
             {
                 new: true,
                 upsert: true
             }
         );
-        newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) > 0.5 && await sendWebhook(productName, newPrice, url, img_url);
+        newPrice < desiredPrice && Math.abs((savedItem?.price || 0) - newPrice) > 0.5 && await sendWebhook(name, newPrice, url, img_url);
         return true;
     } else {
         return true; 
@@ -99,7 +97,7 @@ const updateDatabase = async (productName, newPrice, url, img_url, retrys) => {
 const sendWebhook = (name, price, url, img_url) => {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
-            'content': '<@&859771979845337098>',
+            // 'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
                 'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(desiredPrice)} gefallen!`,
@@ -125,3 +123,14 @@ const sendWebhook = (name, price, url, img_url) => {
         }
     });
 }
+
+mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
+
+(async () => {
+    console.log('Checking prices...');
+    for (let { name, url, img_url } of urls) {
+        let retrys = 0;
+        const price = await checkPrice(url);
+        await updateDatabase(name, price, url, img_url, retrys);
+    };
+})();
