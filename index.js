@@ -89,7 +89,7 @@ async function updateDatabase(productName, newPrice, url, img_url, retrys) {
                 upsert: true
             }
         );
-        newPrice < desiredPrice && await sendWebhook(productName, newPrice, url, img_url);
+        newPrice < desiredPrice && Math.abs((savedItem?.productPrice || 0) - newPrice) < 0.5 && await sendWebhook(productName, newPrice, url, img_url);
         return true
     } else {
         return true; 
