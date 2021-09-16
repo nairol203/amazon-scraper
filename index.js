@@ -74,8 +74,7 @@ async function updateDatabase(name, newPrice, url, img_url, retrys) {
     }
     console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
     const savedItem = await Model.findOne({ name });
-    if (savedItem?.price != newPrice) {
-        const now = new Date();
+    if (!savedItem?.price) {
         await Model.findOneAndUpdate(
             {
                 name,
@@ -85,12 +84,12 @@ async function updateDatabase(name, newPrice, url, img_url, retrys) {
                 url,
                 img_url,
                 price: newPrice,
-                date: now,
+                date: new Date(),
                 $push: {
                     'prices': [
                         {
                             price: newPrice,
-                            date: now
+                            date: new Date()
                         }
                     ]
                 }
@@ -102,6 +101,51 @@ async function updateDatabase(name, newPrice, url, img_url, retrys) {
         );
         newPrice < desiredPrice && Math.abs((savedItem?.price || 0) - newPrice) > 0.5 && await sendWebhook(name, newPrice, url, img_url);
         return true;
+    } else if (savedItem?.price != newPrice) {
+        await Model.findOneAndUpdate(
+            {
+                name,
+            },
+            {
+                $push: {
+                    'prices': [
+                        {
+                            price: savedItem?.price,
+                            date: new Date()
+                        }
+                    ]
+                }
+            }
+        );
+        await Model.findOneAndUpdate(
+            {
+                name,
+            },
+            {
+                price: newPrice,
+                date: new Date(),
+                $push: {
+                    'prices': [
+                        {
+                            price: newPrice,
+                            date: new Date()
+                        }
+                    ]
+                }
+            }
+        );
+        newPrice < desiredPrice && Math.abs((savedItem?.price || 0) - newPrice) > 0.5 && await sendWebhook(name, newPrice, url, img_url);
+        return true;
+    } else if (new Date(savedItem?.date) < new Date()) {
+        await Model.findOneAndUpdate(
+            {
+                name,
+            },
+            {
+                date: new Date(),
+            }
+        );
+        return true;
     } else {
         return true; 
     }
@@ -110,7 +154,7 @@ async function updateDatabase(name, newPrice, url, img_url, retrys) {
 function sendWebhook(name, price, url, img_url) {
     got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
         body: JSON.stringify({
-            'content': '<@&859771979845337098>',
+            // 'content': '<@&859771979845337098>',
             'embeds': [{
                 'title': 'Amazon Price Alert',
                 'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(desiredPrice)} gefallen!`,
