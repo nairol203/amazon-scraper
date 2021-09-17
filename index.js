@@ -30,7 +30,7 @@ const urls = [
     }
 ];
 
-console.log('Application running.')
+console.log('Application running.');
 
 setTimeout(async () => {
     await mongoose.connect(mongoPath).then(console.log('Connected to MongoDB!'));
@@ -39,7 +39,7 @@ setTimeout(async () => {
         let retrys = 0;
         let price = await checkPrice(url);
         while (isNaN(price) && retrys < maxRetrys) {
-            retrys++
+            retrys++;
             price = await checkPrice(url);
         }
         if (isNaN(price)) {
