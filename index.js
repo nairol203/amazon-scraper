@@ -5,7 +5,7 @@ const Model = require('./models/pringles');
 
 const mongoPath = 'mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority';
 const desiredPrice = 10;
-const maxRetrys = 10;
+const maxRetrys = 5;
 const interval = 1.08e+7; // 3 Stunden
 const urls = [
     {
@@ -30,17 +30,28 @@ const urls = [
     }
 ];
 
-(async () => {
-    await mongoose.connect(mongoPath).then(() => console.log('Connected to MongoDB!'));
-    setTimeout(async () => {
-        console.log('Checking prices...');
-        for (let { name, url, img_url } of urls) {
-            let retrys = 0;
-            const price = await checkPrice(url);
-            await updateDatabase(name, price, url, img_url, retrys);
-        };
-    }, interval);
-})();
+console.log('Application running.')
+
+setTimeout(async () => {
+    await mongoose.connect(mongoPath).then(console.log('Connected to MongoDB!'));
+    console.log('Price check starting.');
+    await Promise.all(urls.map(async ({ name, url, img_url }) => {
+        let retrys = 0;
+        let price = await checkPrice(url);
+        while (isNaN(price) && retrys < maxRetrys) {
+            retrys++
+            price = await checkPrice(url);
+        }
+        if (isNaN(price)) {
+            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${name}`);
+        } else {
+            console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
+            await updateDatabase(name, price, url, img_url);
+        }
+    }));
+    console.log('Price check stopped.');
+    mongoose.connection.close().then(console.log('Disconnected from MongoDB!'));
+}, interval);
 
 async function checkPrice(url) {
     try {
@@ -60,19 +71,7 @@ async function checkPrice(url) {
     }
 }
 
-async function updateDatabase(name, newPrice, url, img_url, retrys) {
-    if (isNaN(newPrice)) {
-        if (retrys < maxRetrys) {
-            retrys = retrys + 1;
-            const newPrice = await checkPrice(url);
-            updateDatabase(name, newPrice, url, img_url, retrys);
-            return;
-        } else {
-            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${name}`);
-            return true;
-        }
-    }
-    console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
+async function updateDatabase(name, newPrice, url, img_url) {
     const savedItem = await Model.findOne({ name });
     if (!savedItem?.price) {
         await Model.findOneAndUpdate(
