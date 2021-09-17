@@ -30,27 +30,31 @@ const urls = [
     }
 ];
 
-console.log('Application running.');
+console.log(new Date() + ' Application running.');
 
 setTimeout(async () => {
-    await mongoose.connect(mongoPath).then(console.log('Connected to MongoDB!'));
-    console.log('Price check starting.');
-    await Promise.all(urls.map(async ({ name, url, img_url }) => {
-        let retrys = 0;
-        let price = await checkPrice(url);
-        while (isNaN(price) && retrys < maxRetrys) {
-            retrys++;
-            price = await checkPrice(url);
-        }
-        if (isNaN(price)) {
-            console.log(`[FAILED] [${retrys}/${maxRetrys}] ${name}`);
-        } else {
-            console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
-            await updateDatabase(name, price, url, img_url);
-        }
-    }));
-    console.log('Price check stopped.');
-    mongoose.connection.close().then(console.log('Disconnected from MongoDB!'));
+    try {
+        await mongoose.connect(mongoPath).then(console.log(new Date() + ' Connected to MongoDB!'));
+        console.log(new Date() + ' Price check starting.');
+        await Promise.all(urls.map(async ({ name, url, img_url }) => {
+            let retrys = 0;
+            let price = await checkPrice(url);
+            while (isNaN(price) && retrys < maxRetrys) {
+                retrys++;
+                price = await checkPrice(url);
+            }
+            if (isNaN(price)) {
+                console.log(`[FAILED] [${retrys}/${maxRetrys}] ${name}`);
+            } else {
+                console.log(`[SUCCESS] [${retrys}/${maxRetrys}] ${name}`);
+                await updateDatabase(name, price, url, img_url);
+            }
+        }));
+        console.log(new Date() + ' Price check stopped.');
+        mongoose.connection.close().then(console.log(new Date() + ' Disconnected from MongoDB!'));
+    } catch (error) {
+        console.log(error);
+    }
 }, interval);
 
 async function checkPrice(url) {
