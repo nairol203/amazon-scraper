@@ -2,7 +2,7 @@ const got = require('got');
 const cheerio = require('cheerio');
 
 class trackPrice {
-    constructor({ dbModel, desiredPrice, urls }) {
+    constructor({ dbModel, desiredPrice = 0, urls }) {
         this.model = dbModel;
         this.desiredPrice = desiredPrice;
         this.maxRetrys = 5;

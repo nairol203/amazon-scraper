@@ -46,7 +46,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             console.log(new Date() + ' Checking checking...');
 
             // Rasperry
-            new trackPrice({ dbModel: raspberryModel, desiredPrice: 0, urls: [
+            new trackPrice({ dbModel: raspberryModel, urls: [
                 {
                     name: 'CanaKit Raspberry Pi 4 Starter Kit – 4 GB RAM',
                     url: 'https://www.amazon.de/dp/B081D7ZQZ8',
@@ -55,7 +55,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             ]});
             
             // SSD's
-            new trackPrice({ dbModel: ssdModel, desiredPrice: 0, urls: [
+            new trackPrice({ dbModel: ssdModel, urls: [
                 {
                     name: 'Samsung 980 PRO 1 TB PCIe 4.0',
                     url: 'https://www.amazon.de/dp/B08GS7748F',
