@@ -37,7 +37,7 @@ class trackPrice {
         try {
             const request = await got('https://api.webscrapingapi.com/v1', {
                 searchParams: {
-                    api_key: 'PUQeLnCBBdeYNfKzsoTkcEokLX5lGep6',
+                    api_key: 'MUNjaFN6gUSA6VWxAFowvVuEEIqei3So',
                     url
                 }
             });
