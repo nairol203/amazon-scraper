@@ -12,10 +12,10 @@ const long = 4.32e+7;
 
 mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority')
     .then(() => {
-        console.log(new Date() + ' Connected to MongoDB!');
+        console.log(new Date().toLocaleString() + ' Connected to MongoDB!');
 
         setInterval(() => {
-            console.log(new Date() + ' Checking checking...');
+            console.log(new Date().toLocaleString() + ' Checking checking...');
 
             // Pringles
             new trackPrice({ dbModel: pringlesModel, desiredPrice: 10, urls: [
@@ -43,7 +43,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
         }, short);
 
         setInterval(() => {
-            console.log(new Date() + ' Checking checking...');
+            console.log(new Date().toLocaleString() + ' Checking checking...');
 
             // Rasperry
             new trackPrice({ dbModel: raspberryModel, urls: [

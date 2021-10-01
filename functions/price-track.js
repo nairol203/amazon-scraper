@@ -51,6 +51,8 @@ class trackPrice {
     }
 
     async updateDatabase(name, newPrice, url, img_url) {
+        if (name === 'Pringles Original 6er Pack' && newPrice === 19) return;
+
         const savedItem = await this.model.findOne({ name });
 
         if (!savedItem?.price) {
