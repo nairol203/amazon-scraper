@@ -7,12 +7,12 @@ class trackPrice {
         this.desiredPrice = desiredPrice;
         this.maxRetrys = 5;
         this.urls = urls;
+        this.cooldown = 6.048e+8;
         this.main();
     }
 
     async main() {
         try {
-            // console.log(new Date() + ' Price check starting.');
             await Promise.all(this.urls.map(async ({ name, url, img_url }) => {
                 let retrys = 0;
                 let price = await this.checkPrice(url);
@@ -27,7 +27,6 @@ class trackPrice {
                     await this.updateDatabase(name, price, url, img_url);
                 }
             }));
-            // console.log(new Date() + ' Price check stopped.');
         } catch (error) {
             console.log(error);
         }
@@ -53,10 +52,11 @@ class trackPrice {
 
     async updateDatabase(name, newPrice, url, img_url) {
         const savedItem = await this.model.findOne({ name });
+
         if (!savedItem?.price) {
             await this.model.findOneAndUpdate(
                 {
-                    name,
+                    name
                 },
                 {
                     name,
@@ -78,12 +78,11 @@ class trackPrice {
                     upsert: true
                 }
             );
-            newPrice < this.desiredPrice && Math.abs((savedItem?.price || 0) - newPrice) > 0.5 && await this.sendWebhook(name, newPrice, url, img_url);
-            return true;
+            newPrice < this.desiredPrice && await this.sendWebhook(name, newPrice, url, img_url);
         } else if (savedItem?.price != newPrice) {
             await this.model.findOneAndUpdate(
                 {
-                    name,
+                    name
                 },
                 {
                     $push: {
@@ -98,7 +97,7 @@ class trackPrice {
             );
             await this.model.findOneAndUpdate(
                 {
-                    name,
+                    name
                 },
                 {
                     price: newPrice,
@@ -113,51 +112,66 @@ class trackPrice {
                     }
                 }
             );
-            newPrice < this.desiredPrice && Math.abs((savedItem?.price || 0) - newPrice) > 0.5 && await this.sendWebhook(name, newPrice, url, img_url);
-            return true;
+            newPrice < this.desiredPrice && await this.sendWebhook(name, newPrice, url, img_url);
         } else if (new Date(savedItem?.date) < new Date()) {
             await this.model.findOneAndUpdate(
                 {
-                    name,
+                    name
                 },
                 {
                     date: new Date(),
                 }
             );
-            return true;
-        } else {
-            return true;
         }
     }
 
-    sendWebhook(name, price, url, img_url) {
-        got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
-            body: JSON.stringify({
-                // 'content': '<@&859771979845337098>',
-                'embeds': [{
-                    'title': 'Amazon Price Alert',
-                    'description': `Der Preis von [${name}](${url}) ist unter den Wunschpreis von ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(this.desiredPrice)} gefallen!`,
-                    'fields': [
-                        {
-                            'name': 'Aktueller Preis',
-                            'value': `${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(price)}`,
-                            'inline': true
+    async sendWebhook(name, price, url, img_url) {
+        const savedItem = await this.model.findOne({ name });
+
+        if (savedItem?.lastNoti + this.cooldown > new Date()) return;
+        else {
+            await got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
+                body: JSON.stringify({
+                    'content': 'Gute Neuigkeiten, <@&859771979845337098>!',
+                    'embeds': [{
+                        'title': '🚨 Amazon Price Alert',
+                        'description': `Der Amazon Preis für [${name}](${url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${url})\n\nEs werden für die nächsten ${this.cooldown / 8.64e+7} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Infos findest du auf [hier](https://nairol.me/price-check).`,
+                        'fields': [
+                            {
+                                'name': 'Aktueller Preis',
+                                'value': new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(price),
+                                'inline': true
+                            },
+                            {
+                                'name': 'Wunschpreis',
+                                'value': new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(this.desiredPrice),
+                                'inline': true
+                            }
+                        ],
+                        'thumbnail': {
+                            'url': img_url
                         },
-                    ],
-                    'thumbnail': {
-                        'url': img_url
-                    },
-                    'color': 15258703,
-                    'footer': {
-                        'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
-                        'text': 'Price Alert | Contact @florian#0002 for help'
-                    }
-                }]
-            }),
-            headers: {
-                'content-type': 'application/json'
-            }
-        });
+                        'color': 15258703,
+                        'footer': {
+                            'icon_url': 'https://cdn.discordapp.com/avatars/772508572647030796/8832d780f08e12afc8c1815d7105f911.webp?size=128',
+                            'text': 'Amazon Price Alert | Contact @florian#0002 for help'
+                        }
+                    }]
+                }),
+                headers: {
+                    'content-type': 'application/json'
+                }
+            });
+
+            await this.model.findOneAndUpdate(
+                {
+                    name
+                },
+                {
+                    lastNoti: new Date()
+                }
+            );
+        }
     }
 }
 

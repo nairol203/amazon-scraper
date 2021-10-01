@@ -23,6 +23,7 @@ const product = mongoose.Schema({
 	url: reqString,
 	img_url: reqString,
 	date: reqDate,
+	lastNoti: reqDate,
 	price: reqNumber,
 	prices: [prices]
 });
