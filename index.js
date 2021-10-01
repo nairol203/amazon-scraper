@@ -14,7 +14,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
     .then(() => {
         console.log(new Date() + ' Connected to MongoDB!');
 
-        (() => {
+        setInterval(() => {
             console.log(new Date() + ' Checking checking...');
 
             // Pringles
@@ -40,7 +40,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
                     img_url: 'https://m.media-amazon.com/images/I/817QydVRFWS._SL1500_.jpg'
                 }
             ]});
-        })();
+        }, short);
 
         setInterval(() => {
             console.log(new Date() + ' Checking checking...');
