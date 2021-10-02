@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const axios = require('axios')
 
 class trackPrice {
-    constructor({ dbModel, desiredPrice = 0, maxRetrys = 5, element = '#priceblock_ourprice', urls }) {
+    constructor({ dbModel, desiredPrice = 0, maxRetrys = 15, element = '#priceblock_ourprice', urls }) {
         this.model = dbModel;
         this.desiredPrice = desiredPrice;
         this.maxRetrys = maxRetrys;

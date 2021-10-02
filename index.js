@@ -18,7 +18,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             console.log(new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking checking...');
 
             // Pringles
-            new trackPrice({ dbModel: pringlesModel, desiredPrice: 10, maxRetrys: 10, urls: [
+            new trackPrice({ dbModel: pringlesModel, desiredPrice: 10, urls: [
                 {
                     name: 'Pringles Original 6er Pack',
                     url: 'https://amazon.de/dp/B074N1TWL8',
