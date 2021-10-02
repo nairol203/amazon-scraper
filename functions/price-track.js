@@ -37,19 +37,19 @@ class trackPrice {
 
     async checkPrice(productUrl) {
         try {
-            const { data } = await axios.get(productUrl, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
-                }
-            });
-            // const request = await got('https://api.webscrapingapi.com/v1', {
-            //     searchParams: {
-            //         api_key: this.apiKey,
-            //         url
+            // const { data } = await axios.get(productUrl, {
+            //     headers: {
+            //         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
             //     }
             // });
-            // const $ = cheerio.load(request.body);
-            const $ = cheerio.load(data);
+            // const $ = cheerio.load(data);
+            const request = await got('https://api.webscrapingapi.com/v1', {
+                searchParams: {
+                    api_key: this.apiKey,
+                    url
+                }
+            });
+            const $ = cheerio.load(request.body);
             const element = $(this.element);
             const scrapedPriceString = element.text();
             const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
