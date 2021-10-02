@@ -46,7 +46,7 @@ class trackPrice {
             const request = await got('https://api.webscrapingapi.com/v1', {
                 searchParams: {
                     api_key: this.apiKey,
-                    url
+                    productUrl
                 }
             });
             const $ = cheerio.load(request.body);
