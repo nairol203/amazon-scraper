@@ -69,4 +69,4 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             ]});
         }, long);
     })
-    .catch((error) => console.log(error));
+    .catch((error) => console.error(error));

@@ -30,7 +30,7 @@ class trackPrice {
                 }
             }));
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -45,7 +45,7 @@ class trackPrice {
                 return scrapedPrice;
             })
             .catch(err => {
-                console.log(err)
+                console.error(err);
                 return NaN;
             });
     }
