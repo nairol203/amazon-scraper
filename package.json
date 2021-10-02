@@ -16,6 +16,7 @@
     "mongoose": "^6.0.4",
     "nightmare": "^3.0.2",
     "promise-request-retry": "^1.0.2",
-    "puppeteer": "^10.4.0"
+    "scraperapi-sdk": "^1.0.6",
+    "x-ray": "^2.3.4"
   }
 }

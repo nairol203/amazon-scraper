@@ -42,7 +42,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             ]});
         })();
 
-        (() => {
+        setTimeout(() => {
             console.log(new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking checking...');
 
             // Rasperry
@@ -67,6 +67,6 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
                     img_url: 'https://m.media-amazon.com/images/I/91PA5sP5wNL._AC_SL1500_.jpg'
                 }
             ]});
-        })();
+        }, long);
     })
     .catch((error) => console.log(error));

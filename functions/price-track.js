@@ -1,7 +1,5 @@
 const got = require('got');
 const cheerio = require('cheerio');
-const axios = require('axios')
-const puppeteer = require('puppeteer')
 
 class trackPrice {
     constructor({ dbModel, desiredPrice = 0, maxRetrys = 5, element = '#priceblock_ourprice', urls }) {
@@ -11,7 +9,7 @@ class trackPrice {
         this.urls = urls;
         this.element = element;
         this.cooldown = 6.048e+8; // 7 Tage
-        this.apiKey = 'MUNjaFN6gUSA6VWxAFowvVuEEIqei3So';
+        this.apiKey = '11bb3e16ba3e13b65da1d36b15f49d43';
         this.main();
     }
 
@@ -37,44 +35,19 @@ class trackPrice {
     }
 
     async checkPrice(productUrl) {
-        try {
-            const browser = await puppeteer.launch({
-                headless: true
+        const scraperapiClient = require('scraperapi-sdk')(this.apiKey);
+        return scraperapiClient.get(productUrl)
+            .then(data => {
+                const $ = cheerio.load(data);
+                const element = $(this.element);
+                const scrapedPriceString = element.text();
+                const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
+                return scrapedPrice;
+            })
+            .catch(err => {
+                console.log(err)
+                return NaN;
             });
-
-            const page = await browser.newPage();
-            await page.goto(productUrl);
-        
-            const pageData = await page.evaluate(() => {
-                return {
-                    html: document.documentElement.innerHTML,
-                };
-            });
-        
-            const $ = cheerio.load(pageData.html)
-            
-            // const { data } = await axios.get(productUrl, {
-            //     headers: {
-            //         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36'
-            //     }
-            // });
-            // const $ = cheerio.load(data);
-
-            // const request = await got('https://api.webscrapingapi.com/v1', {
-            //     searchParams: {
-            //         api_key: this.apiKey,
-            //         productUrl
-            //     }
-            // });
-            // const $ = cheerio.load(request.body);
-            const element = $(this.element);
-            const scrapedPriceString = element.text();
-            const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
-            await browser.close();
-            return scrapedPrice;
-        } catch (error) {
-            return NaN;
-        }
     }
 
     async updateDatabase(name, newPrice, url, img_url) {
