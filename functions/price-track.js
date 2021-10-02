@@ -7,7 +7,7 @@ class trackPrice {
         this.desiredPrice = desiredPrice;
         this.maxRetrys = 5;
         this.urls = urls;
-        this.cooldown = 6.048e+8;
+        this.cooldown = 6.048e+8; // 7 Tage
         this.main();
     }
 
@@ -137,7 +137,7 @@ class trackPrice {
                     'content': 'Gute Neuigkeiten, <@&859771979845337098>!',
                     'embeds': [{
                         'title': '🚨 Amazon Price Alert',
-                        'description': `Der Amazon Preis für [${name}](${url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${url})\n\nEs werden für die nächsten ${this.cooldown / 8.64e+7} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Infos findest du auf [hier](https://nairol.me/price-check).`,
+                        'description': `Der Amazon Preis für [${name}](${url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${url})\n\nEs werden für die nächsten ${this.cooldown / 8.64e+7} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Preisentwicklungen findest auf https://nairol.me/price-check.`,
                         'fields': [
                             {
                                 'name': 'Aktueller Preis',
