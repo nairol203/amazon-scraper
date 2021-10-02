@@ -12,10 +12,10 @@ const long = 4.32e+7;
 
 mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mongodb.net/price-tracking?retryWrites=true&w=majority')
     .then(() => {
-        console.log(new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Connected to MongoDB!');
+        console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Connected to MongoDB!');
 
-        (() => {
-            console.log(new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking checking...');
+        setTimeout(() => {
+            console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking short cycle...');
 
             // Pringles
             new trackPrice({ dbModel: pringlesModel, desiredPrice: 10, urls: [
@@ -40,10 +40,10 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
                     img_url: 'https://m.media-amazon.com/images/I/817QydVRFWS._SL1500_.jpg'
                 }
             ]});
-        })();
+        }, short);
 
         setTimeout(() => {
-            console.log(new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking checking...');
+            console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking long cycle...');
 
             // Rasperry
             new trackPrice({ dbModel: raspberryModel, urls: [
