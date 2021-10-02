@@ -1,13 +1,16 @@
 const got = require('got');
 const cheerio = require('cheerio');
+const axios = require('axios')
 
 class trackPrice {
-    constructor({ dbModel, desiredPrice = 0, urls }) {
+    constructor({ dbModel, desiredPrice = 0, maxRetrys = 5, element = '#priceblock_ourprice', urls }) {
         this.model = dbModel;
         this.desiredPrice = desiredPrice;
-        this.maxRetrys = 5;
+        this.maxRetrys = maxRetrys;
         this.urls = urls;
+        this.element = element;
         this.cooldown = 6.048e+8; // 7 Tage
+        this.apiKey = 'MUNjaFN6gUSA6VWxAFowvVuEEIqei3So';
         this.main();
     }
 
@@ -32,20 +35,27 @@ class trackPrice {
         }
     }
 
-    async checkPrice(url) {
+    async checkPrice(productUrl) {
         try {
-            const request = await got('https://api.webscrapingapi.com/v1', {
-                searchParams: {
-                    api_key: 'MUNjaFN6gUSA6VWxAFowvVuEEIqei3So',
-                    url
+            const { data } = await axios.get(productUrl, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36'
                 }
             });
-            const $ = cheerio.load(request.body);
-            const element = $('#priceblock_ourprice');
+            // const request = await got('https://api.webscrapingapi.com/v1', {
+            //     searchParams: {
+            //         api_key: this.apiKey,
+            //         url
+            //     }
+            // });
+            // const $ = cheerio.load(request.body);
+            const $ = cheerio.load(data);
+            const element = $(this.element);
             const scrapedPriceString = element.text();
             const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
             return scrapedPrice;
         } catch (error) {
+            console.log(error)
             return NaN;
         }
     }
