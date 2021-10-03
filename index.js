@@ -14,7 +14,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
     .then(() => {
         console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Connected to MongoDB!');
 
-        setTimeout(() => {
+        setInterval(() => {
             console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking short cycle...');
 
             // Pringles
@@ -42,7 +42,7 @@ mongoose.connect('mongodb+srv://florianbock:ofW5woB7johRzYml@cluster0.yy2j1.mong
             ]});
         }, short);
 
-        setTimeout(() => {
+        setInterval(() => {
             console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking long cycle...');
 
             // Rasperry
