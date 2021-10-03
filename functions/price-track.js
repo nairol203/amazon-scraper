@@ -45,7 +45,7 @@ class trackPrice {
                 return scrapedPrice;
             })
             .catch(err => {
-                console.error(err);
+                // console.error(err);
                 return NaN;
             });
     }
