@@ -2,20 +2,20 @@ const mongoose = require('mongoose');
 
 const reqString = {
 	type: String,
-	required: true
+	required: true,
 };
 const reqDate = {
 	type: Date,
-	required: true
+	required: true,
 };
 const reqNumber = {
 	type: Number,
-	required: true
+	required: true,
 };
 
 const prices = mongoose.Schema({
 	date: reqDate,
-	price: reqNumber
+	price: reqNumber,
 });
 
 const product = mongoose.Schema({
@@ -25,7 +25,7 @@ const product = mongoose.Schema({
 	date: reqDate,
 	lastNoti: reqDate,
 	price: reqNumber,
-	prices: [prices]
+	prices: [prices],
 });
 
 module.exports = mongoose.model('ssd', product);
