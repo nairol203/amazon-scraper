@@ -4,7 +4,7 @@ const pringlesModel = require('./models/pringles');
 const raspberryModel = require('./models/raspberry');
 const ssdModel = require('./models/ssd');
 
-const short = 1.08e7;
+const short = 2.16e+7;
 const long = 4.32e7;
 
 // 1.08e+7 = 3 Stunden
