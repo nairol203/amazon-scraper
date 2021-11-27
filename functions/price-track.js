@@ -3,7 +3,7 @@ const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
 class trackPrice {
-	constructor({ dbModel, desiredPrice = 0, maxRetrys = 5, element = '#priceblock_ourprice', urls }) {
+	constructor({ dbModel, desiredPrice = 0, maxRetrys = 0, element = '#priceblock_ourprice', urls }) {
 		this.model = dbModel;
 		this.desiredPrice = desiredPrice;
 		this.maxRetrys = maxRetrys;

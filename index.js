@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const trackPrice = require('./functions/price-track');
+const TrackPrice = require('./functions/price-track');
 const pringlesModel = require('./models/pringles');
 const raspberryModel = require('./models/raspberry');
 const ssdModel = require('./models/ssd');
@@ -15,11 +15,11 @@ mongoose
 	.then(() => {
 		console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Connected to MongoDB!');
 
-		setTimeout(() => {
+		setInterval(() => {
 			console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking short cycle...');
 
 			// Pringles
-			new trackPrice({
+			new TrackPrice({
 				dbModel: pringlesModel,
 				desiredPrice: 10,
 				urls: [
@@ -45,13 +45,13 @@ mongoose
 					},
 				],
 			});
-		}, 1);
+		}, short);
 
 		setInterval(() => {
 			console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking long cycle...');
 
 			// Rasperry
-			new trackPrice({
+			new TrackPrice({
 				dbModel: raspberryModel,
 				urls: [
 					{
@@ -63,7 +63,7 @@ mongoose
 			});
 
 			// SSD's
-			new trackPrice({
+			new TrackPrice({
 				dbModel: ssdModel,
 				urls: [
 					{
