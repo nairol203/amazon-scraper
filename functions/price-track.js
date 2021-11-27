@@ -1,5 +1,6 @@
 const got = require('got');
 const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 class trackPrice {
 	constructor({ dbModel, desiredPrice = 0, maxRetrys = 5, element = '#priceblock_ourprice', urls }) {
@@ -9,7 +10,6 @@ class trackPrice {
 		this.urls = urls;
 		this.element = element;
 		this.cooldown = 6.048e8; // 7 Tage
-		this.apiKey = '11bb3e16ba3e13b65da1d36b15f49d43';
 		this.main();
 	}
 
@@ -37,20 +37,28 @@ class trackPrice {
 	}
 
 	async checkPrice(productUrl) {
-		const scraperapiClient = require('scraperapi-sdk')(this.apiKey);
-		return scraperapiClient
-			.get(productUrl)
-			.then(data => {
-				const $ = cheerio.load(data);
-				const element = $(this.element);
-				const scrapedPriceString = element.text();
-				const scrapedPrice = parseFloat(scrapedPriceString.replace('€', '').replace(',', '.'));
-				return scrapedPrice;
-			})
-			.catch(err => {
-				// console.error(err);
-				return NaN;
-			});
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox'],
+		});
+
+		const page = await browser.newPage();
+		await page.goto(productUrl);
+
+		const pageData = await page.evaluate(() => {
+			return {
+				html: document.documentElement.innerHTML,
+			};
+		});
+
+		const $ = cheerio.load(pageData.html);
+
+		const element = $('.a-price');
+
+		const prices = element.text().split('€');
+
+		await browser.close();
+		return parseFloat(prices[0].replace(',', '.'));
 	}
 
 	async updateDatabase(name, newPrice, url, img_url) {
