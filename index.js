@@ -15,7 +15,7 @@ mongoose
 	.then(() => {
 		console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Connected to MongoDB!');
 
-		setInterval(() => {
+		setTimeout(() => {
 			console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking short cycle...');
 
 			// Pringles
@@ -45,39 +45,32 @@ mongoose
 					},
 				],
 			});
-		}, short);
+		}, 1000000);
 
-		setInterval(() => {
+		setTimeout(() => {
 			console.log(new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' }) + ' Checking long cycle...');
-
-			// Rasperry
-			new TrackPrice({
-				dbModel: raspberryModel,
-				urls: [
-					{
-						name: 'CanaKit Raspberry Pi 4 Starter Kit – 4 GB RAM',
-						url: 'https://www.amazon.de/dp/B081D7ZQZ8',
-						img_url: 'https://m.media-amazon.com/images/I/71T0Kc-pCYL._AC_SL1500_.jpg',
-					},
-				],
-			});
 
 			// SSD's
 			new TrackPrice({
 				dbModel: ssdModel,
 				urls: [
 					{
-						name: 'Samsung 980 PRO 1 TB PCIe 4.0',
-						url: 'https://www.amazon.de/dp/B08GS7748F',
-						img_url: 'https://m.media-amazon.com/images/I/71qA45tWZ5L._AC_SL1500_.jpg',
+						name: 'NVME Adapter mit Kühlkörper',
+						url: 'https://www.amazon.de/dp/B07SQ12MV5',
+						img_url: 'https://m.media-amazon.com/images/I/81i7wYxQw6L._AC_SL1500_.jpg',
 					},
 					{
-						name: 'Samsung 870 QVO 1TB SATA 2,5 Zoll',
-						url: 'https://www.amazon.de/dp/B089QXQ1TV',
-						img_url: 'https://m.media-amazon.com/images/I/91PA5sP5wNL._AC_SL1500_.jpg',
+						name: 'Samsung 970 EVO Plus 2 TB',
+						url: 'https://www.amazon.de/dp/B07MLJD32L',
+						img_url: 'https://m.media-amazon.com/images/I/71XXKiUYqcL._AC_SL1500_.jpg',
+					},
+					{
+						name: 'Samsung 980 PRO 2 TB',
+						url: 'https://www.amazon.de/dp/B08QJHLC8J',
+						img_url: 'https://m.media-amazon.com/images/I/71uCSLY-W3L._AC_SL1500_.jpg',
 					},
 				],
 			});
-		}, long);
+		}, 1);
 	})
 	.catch(error => console.error(error));
