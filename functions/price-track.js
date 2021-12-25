@@ -3,10 +3,9 @@ const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
 class trackPrice {
-	constructor({ dbModel, desiredPrice = 0, maxRetrys = 0, element = '#priceblock_ourprice', urls }) {
+	constructor({ dbModel, desiredPrice = 0, element = '#priceblock_ourprice', urls }) {
 		this.model = dbModel;
 		this.desiredPrice = desiredPrice;
-		this.maxRetrys = maxRetrys;
 		this.urls = urls;
 		this.element = element;
 		this.cooldown = 6.048e8; // 7 Tage
@@ -14,26 +13,18 @@ class trackPrice {
 	}
 
 	async main() {
-		try {
-			await Promise.all(
-				this.urls.map(async ({ name, url, img_url }) => {
-					let retrys = 0;
-					let price = await this.checkPrice(url);
-					while (isNaN(price) && retrys < this.maxRetrys) {
-						retrys++;
-						price = await this.checkPrice(url);
-					}
-					if (isNaN(price)) {
-						console.log(`[FAILED] [${retrys}/${this.maxRetrys}] ${name}`);
-					} else {
-						console.log(`[SUCCESS] [${retrys}/${this.maxRetrys}] ${name}`);
-						await this.updateDatabase(name, price, url, img_url);
-					}
-				})
-			);
-		} catch (error) {
-			console.error(error);
+		let failedItems = 0;
+
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${this.urls.length} Items...`);
+		for (const { name, url, img_url } of this.urls) {
+			const price = await this.checkPrice(url);
+			if (isNaN(price)) {
+				failedItems++;
+			} else {
+				await this.updateDatabase(name, price, url, img_url);
+			}
 		}
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${this.urls.length} Items, ${failedItems} Items failed.`);
 	}
 
 	async checkPrice(productUrl) {
