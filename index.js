@@ -47,7 +47,7 @@ AutoCheck({
 	dbModel: raspberryModel,
 	urls: [
 		{
-			name: 'CanaKit Raspberry Pi 4 Starter Kit – 4 GB RAM',
+			name: 'CanaKit - Starter Kit',
 			url: 'https://www.amazon.de/dp/B081D7ZQZ8',
 			img_url: 'https://m.media-amazon.com/images/I/71T0Kc-pCYL._AC_SL1500_.jpg',
 		},
