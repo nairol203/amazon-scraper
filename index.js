@@ -1,12 +1,15 @@
-const mongoose = require('mongoose');
 const { AutoCheck } = require('./functions/auto-check');
+
 const pringlesModel = require('./models/pringles');
 const ssdModel = require('./models/ssd');
+const tadoModel = require('./models/tado');
 
-const short = 1.08e7;
-const long = 2.16e7;
+const short = 7.2e6;
+const long = 1.44e7;
 
-// 1.08e+7 = 3 Stunden
+// 3.6e+6 = 1 Stunden
+// 7.2e+6 = 2 Stunden
+// 1.44e+7 = 4 Stunden
 // 4.32e+7 = 12 Stunden
 
 // Pringles
@@ -58,5 +61,19 @@ AutoCheck({
 			img_url: 'https://m.media-amazon.com/images/I/71uCSLY-W3L._AC_SL1500_.jpg',
 		},
 	],
-	interval: long,
+	interval: short,
+});
+
+// Tado
+AutoCheck({
+	dbModel: tadoModel,
+	desiredPrice: 85,
+	urls: [
+		{
+			name: 'tado° - Starter Kit',
+			url: 'https://www.amazon.de/dp/B08LP1BWPQ',
+			img_url: 'https://m.media-amazon.com/images/I/515gcW1B2rL._AC_SL1000_.jpg',
+		},
+	],
+	interval: short,
 });
