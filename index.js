@@ -1,6 +1,7 @@
 const { AutoCheck } = require('./functions/auto-check');
 
 const pringlesModel = require('./models/pringles');
+const raspberryModel = require('./models/raspberry');
 const ssdModel = require('./models/ssd');
 const tadoModel = require('./models/tado');
 
@@ -39,6 +40,18 @@ AutoCheck({
 		},
 	],
 	interval: short,
+});
+
+// Raspberry Pi
+AutoCheck({
+	dbModel: raspberryModel,
+	urls: [
+		{
+			name: 'CanaKit Raspberry Pi 4 Starter Kit – 4 GB RAM',
+			url: 'https://www.amazon.de/dp/B081D7ZQZ8',
+			img_url: 'https://m.media-amazon.com/images/I/71T0Kc-pCYL._AC_SL1500_.jpg',
+		},
+	],
 });
 
 // SSD's
