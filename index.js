@@ -5,7 +5,7 @@ const raspberryModel = require('./models/raspberry');
 const ssdModel = require('./models/ssd');
 const tadoModel = require('./models/tado');
 
-const short = 7.2e6;
+const short = 3.6e6;
 const long = 1.44e7;
 
 // 3.6e+6 = 1 Stunden
@@ -52,6 +52,7 @@ AutoCheck({
 			img_url: 'https://m.media-amazon.com/images/I/71T0Kc-pCYL._AC_SL1500_.jpg',
 		},
 	],
+	interval: long,
 });
 
 // SSD's
@@ -74,7 +75,7 @@ AutoCheck({
 			img_url: 'https://m.media-amazon.com/images/I/71uCSLY-W3L._AC_SL1500_.jpg',
 		},
 	],
-	interval: short,
+	interval: long,
 });
 
 // Tado
@@ -88,5 +89,5 @@ AutoCheck({
 			img_url: 'https://m.media-amazon.com/images/I/515gcW1B2rL._AC_SL1000_.jpg',
 		},
 	],
-	interval: short,
+	interval: long,
 });
