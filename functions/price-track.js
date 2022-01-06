@@ -13,52 +13,43 @@ class trackPrice {
 	}
 
 	async main() {
-		let failedItems = 0;
-
-		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${this.urls.length} Items...`);
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${this.urls.length} Item(s)...`);
 		for (const { name, url, img_url } of this.urls) {
 			const price = await this.checkPrice(url);
-			if (isNaN(price)) {
-				failedItems++;
-			} else {
-				await this.updateDatabase(name, price, url, img_url);
-			}
+			await this.updateDatabase(name, price, url, img_url);
 		}
-		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${this.urls.length} Items, ${failedItems} Items failed.`);
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${this.urls.length} Item(s).`);
 	}
 
 	async checkPrice(productUrl) {
 		const browser = await puppeteer.launch({
 			headless: true,
-			executablePath: '/usr/bin/chromium-browser',
+			// executablePath: '/usr/bin/chromium-browser',
 			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		const page = await browser.newPage();
 		await page.goto(productUrl);
-
 		const pageData = await page.evaluate(() => {
 			return {
 				html: document.documentElement.innerHTML,
 			};
 		});
 
-		const $ = cheerio.load(pageData.html);
-
-		const element = $('.a-price');
-
-		const prices = element.text().split('€');
-
 		await browser.close();
-		return parseFloat(prices[0].replace(',', '.'));
+
+		const $ = cheerio.load(pageData.html);
+		const element = $('.a-offscreen');
+		const prices = element.text().split('€');
+		const price = parseFloat(prices[0].replace(',', '.'));
+
+		return isNaN(price) ? null : price;
 	}
 
 	async updateDatabase(name, newPrice, url, img_url) {
-		if (name.startsWith('Pringles') && newPrice === 19) return;
-
 		const savedItem = await this.model.findOne({ name });
 
-		if (!savedItem?.price) {
+		if (savedItem?.price === undefined) {
 			await this.model.findOneAndUpdate(
 				{
 					name,
@@ -85,6 +76,7 @@ class trackPrice {
 			);
 			newPrice < this.desiredPrice && (await this.sendWebhook(name, newPrice, url, img_url));
 		} else if (savedItem?.price != newPrice) {
+			// return console.log(2, newPrice);
 			await this.model.findOneAndUpdate(
 				{
 					name,
@@ -117,7 +109,7 @@ class trackPrice {
 					},
 				}
 			);
-			newPrice < this.desiredPrice && (await this.sendWebhook(name, newPrice, url, img_url));
+			if (newPrice && newPrice < this.desiredPrice) await this.sendWebhook(name, newPrice, url, img_url);
 		} else if (new Date(savedItem?.date) < new Date()) {
 			await this.model.findOneAndUpdate(
 				{

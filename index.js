@@ -56,39 +56,39 @@ AutoCheck({
 	interval: long,
 });
 
-// SSD's
-AutoCheck({
-	dbModel: ssdModel,
-	urls: [
-		{
-			name: 'NVME Adapter mit Kühlkörper',
-			url: 'https://www.amazon.de/dp/B07SQ12MV5',
-			img_url: 'https://m.media-amazon.com/images/I/81i7wYxQw6L._AC_SL1500_.jpg',
-		},
-		{
-			name: 'Samsung 970 EVO Plus 2 TB',
-			url: 'https://www.amazon.de/dp/B07MLJD32L',
-			img_url: 'https://m.media-amazon.com/images/I/71XXKiUYqcL._AC_SL1500_.jpg',
-		},
-		{
-			name: 'Samsung 980 PRO 2 TB',
-			url: 'https://www.amazon.de/dp/B08QJHLC8J',
-			img_url: 'https://m.media-amazon.com/images/I/71uCSLY-W3L._AC_SL1500_.jpg',
-		},
-	],
-	interval: long,
-});
+// // SSD's
+// AutoCheck({
+// 	dbModel: ssdModel,
+// 	urls: [
+// 		{
+// 			name: 'NVME Adapter mit Kühlkörper',
+// 			url: 'https://www.amazon.de/dp/B07SQ12MV5',
+// 			img_url: 'https://m.media-amazon.com/images/I/81i7wYxQw6L._AC_SL1500_.jpg',
+// 		},
+// 		{
+// 			name: 'Samsung 970 EVO Plus 2 TB',
+// 			url: 'https://www.amazon.de/dp/B07MLJD32L',
+// 			img_url: 'https://m.media-amazon.com/images/I/71XXKiUYqcL._AC_SL1500_.jpg',
+// 		},
+// 		{
+// 			name: 'Samsung 980 PRO 2 TB',
+// 			url: 'https://www.amazon.de/dp/B08QJHLC8J',
+// 			img_url: 'https://m.media-amazon.com/images/I/71uCSLY-W3L._AC_SL1500_.jpg',
+// 		},
+// 	],
+// 	interval: long,
+// });
 
-// Tado
-AutoCheck({
-	dbModel: tadoModel,
-	desiredPrice: 85,
-	urls: [
-		{
-			name: 'tado° - Starter Kit',
-			url: 'https://www.amazon.de/dp/B08LP1BWPQ',
-			img_url: 'https://m.media-amazon.com/images/I/515gcW1B2rL._AC_SL1000_.jpg',
-		},
-	],
-	interval: long,
-});
+// // Tado
+// AutoCheck({
+// 	dbModel: tadoModel,
+// 	desiredPrice: 85,
+// 	urls: [
+// 		{
+// 			name: 'tado° - Starter Kit',
+// 			url: 'https://www.amazon.de/dp/B08LP1BWPQ',
+// 			img_url: 'https://m.media-amazon.com/images/I/515gcW1B2rL._AC_SL1000_.jpg',
+// 		},
+// 	],
+// 	interval: long,
+// });
