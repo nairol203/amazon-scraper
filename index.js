@@ -45,6 +45,7 @@ AutoCheck({
 // Raspberry Pi
 AutoCheck({
 	dbModel: raspberryModel,
+	desiredPrice: 100,
 	urls: [
 		{
 			name: 'CanaKit - Starter Kit',
