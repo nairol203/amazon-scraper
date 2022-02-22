@@ -17,7 +17,7 @@ const long = 1.44e7;
 AutoCheck({
 	dbModel: pringlesModel,
 	desiredPrice: 10,
-	urls: [
+	items: [
 		{
 			name: 'Pringles Original 6er Pack',
 			url: 'https://amazon.de/dp/B074N1TWL8',
@@ -46,7 +46,7 @@ AutoCheck({
 AutoCheck({
 	dbModel: raspberryModel,
 	desiredPrice: 100,
-	urls: [
+	items: [
 		{
 			name: 'CanaKit - Starter Kit',
 			url: 'https://www.amazon.de/dp/B081D7ZQZ8',
@@ -59,7 +59,7 @@ AutoCheck({
 // SSD's
 AutoCheck({
 	dbModel: ssdModel,
-	urls: [
+	items: [
 		{
 			name: 'NVME Adapter mit Kühlkörper',
 			url: 'https://www.amazon.de/dp/B07SQ12MV5',
@@ -83,7 +83,7 @@ AutoCheck({
 AutoCheck({
 	dbModel: tadoModel,
 	desiredPrice: 85,
-	urls: [
+	items: [
 		{
 			name: 'tado° - Starter Kit',
 			url: 'https://www.amazon.de/dp/B08LP1BWPQ',
