@@ -32,4 +32,4 @@ const product = mongoose.Schema({
 	prices: [prices],
 });
 
-module.exports = mongoose.model('price-check', product);
+module.exports = mongoose.model('price-check', product, 'price-check');
