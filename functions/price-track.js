@@ -138,7 +138,7 @@ class trackPrice {
 			/**if (price && price < this.desiredPrice) */ await this.sendNotification(name, price, url, img_url);
 		}
 
-		await fetch(`${process.env.SERVER}/api/revalidate`);
+		await got(`${process.env.SERVER}/api/revalidate`);
 	}
 
 	async sendNotification(name, price, url, img_url) {
