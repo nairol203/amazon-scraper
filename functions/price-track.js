@@ -135,7 +135,7 @@ class trackPrice {
 			}
 
 			// send notification if price is low
-			/**if (price && price < this.desiredPrice) */ await this.sendNotification(name, price, url, img_url);
+			if (price && price < this.desiredPrice) await this.sendNotification(name, price, url, img_url);
 		}
 
 		await got(`${process.env.SERVER}/api/revalidate`);
