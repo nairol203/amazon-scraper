@@ -1,9 +1,5 @@
+require('dotenv').config();
 const { AutoCheck } = require('./functions/auto-check');
-
-const pringlesModel = require('./models/pringles');
-const raspberryModel = require('./models/raspberry');
-const ssdModel = require('./models/ssd');
-const tadoModel = require('./models/tado');
 
 const short = 3.6e6;
 const long = 1.44e7;
@@ -15,7 +11,6 @@ const long = 1.44e7;
 
 // Pringles
 AutoCheck({
-	dbModel: pringlesModel,
 	desiredPrice: 10,
 	items: [
 		{
@@ -44,7 +39,6 @@ AutoCheck({
 
 // Raspberry Pi
 AutoCheck({
-	dbModel: raspberryModel,
 	desiredPrice: 100,
 	items: [
 		{
@@ -58,7 +52,6 @@ AutoCheck({
 
 // SSD's
 AutoCheck({
-	dbModel: ssdModel,
 	items: [
 		{
 			name: 'NVME Adapter mit Kühlkörper',
@@ -81,7 +74,6 @@ AutoCheck({
 
 // Tado
 AutoCheck({
-	dbModel: tadoModel,
 	desiredPrice: 85,
 	items: [
 		{

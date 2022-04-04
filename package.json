@@ -12,6 +12,7 @@
   "dependencies": {
     "axios": "^0.21.2",
     "cheerio": "^1.0.0-rc.10",
+    "dotenv": "^16.0.0",
     "got": "^11.8.2",
     "mongoose": "^6.0.4",
     "nightmare": "^3.0.2",

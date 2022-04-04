@@ -20,6 +20,10 @@ const prices = mongoose.Schema({
 
 const product = mongoose.Schema({
 	name: reqString,
+	displayName: {
+		type: String,
+	},
+	tag: reqString,
 	url: reqString,
 	img_url: reqString,
 	date: reqDate,
@@ -28,4 +32,4 @@ const product = mongoose.Schema({
 	prices: [prices],
 });
 
-module.exports = mongoose.model('raspberry', product);
+module.exports = mongoose.model('price-check', product);

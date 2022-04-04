@@ -2,9 +2,10 @@ const got = require('got');
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
+const dbModel = require('../models/product');
+
 class trackPrice {
-	constructor({ dbModel, desiredPrice = 0, items }) {
-		this.model = dbModel;
+	constructor({ desiredPrice = 0, items }) {
 		this.desiredPrice = desiredPrice;
 		this.items = items;
 		this.cooldown = 6.048e8; // 7 Tage
@@ -17,8 +18,6 @@ class trackPrice {
 		const scrapedData = await this.scrapeData();
 		const processedData = this.evaluatePrice(scrapedData);
 		await this.updateDatabase(processedData);
-
-		console.log(processedData);
 
 		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${this.items.length} Item(s).`);
 	}
@@ -61,11 +60,11 @@ class trackPrice {
 
 	async updateDatabase(processedData) {
 		for (const { name, url, img_url, price } of processedData) {
-			const savedItem = await this.model.findOne({ name });
+			const savedItem = await dbModel.findOne({ name });
 
 			if (savedItem?.price === undefined) {
 				// create new database entry
-				await this.model.findOneAndUpdate(
+				await dbModel.findOneAndUpdate(
 					{
 						name,
 					},
@@ -90,7 +89,7 @@ class trackPrice {
 				);
 			} else if (savedItem?.price != price) {
 				// push old price again
-				await this.model.findOneAndUpdate(
+				await dbModel.findOneAndUpdate(
 					{
 						name,
 					},
@@ -106,7 +105,7 @@ class trackPrice {
 					}
 				);
 				// push new Price
-				await this.model.findOneAndUpdate(
+				await dbModel.findOneAndUpdate(
 					{
 						name,
 					},
@@ -125,7 +124,7 @@ class trackPrice {
 				);
 			} else {
 				// no price change, only update date
-				await this.model.findOneAndUpdate(
+				await dbModel.findOneAndUpdate(
 					{
 						name,
 					},
@@ -138,10 +137,12 @@ class trackPrice {
 			// send notification if price is low
 			/**if (price && price < this.desiredPrice) */ await this.sendNotification(name, price, url, img_url);
 		}
+
+		await fetch(`${process.env.SERVER}/api/revalidate`);
 	}
 
 	async sendNotification(name, price, url, img_url) {
-		const savedItem = await this.model.findOne({ name });
+		const savedItem = await dbModel.findOne({ name });
 
 		if (new Date(savedItem?.lastNoti).getTime() + this.cooldown < Date.now()) {
 			await got.post('https://discord.com/api/webhooks/859754893693943818/l_3tWRXmN8dF1knwbc2O67jPRLncmZK2bBzLQ-tieG8im9JE5NcEONixhoURrzmvGL6z', {
@@ -181,7 +182,7 @@ class trackPrice {
 				},
 			});
 
-			await this.model.findOneAndUpdate(
+			await dbModel.findOneAndUpdate(
 				{
 					name,
 				},

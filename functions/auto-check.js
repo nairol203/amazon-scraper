@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { connectToMongo } = require('./mongo');
 const TrackPrice = require('./price-track');
 
-const AutoCheck = async ({ dbModel, desiredPrice, urls, interval }) => {
+const AutoCheck = async ({ desiredPrice, urls, interval }) => {
 	await connectToMongo();
 
 	const checkConnection = () => {
@@ -14,10 +14,10 @@ const AutoCheck = async ({ dbModel, desiredPrice, urls, interval }) => {
 		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Setting up Price Check with Interval of ${interval / 3.6e6} Hours...`);
 
 		setTimeout(() => {
-			new TrackPrice({ dbModel, desiredPrice, urls });
+			new TrackPrice({ desiredPrice, urls });
 		}, 5000);
 		setInterval(() => {
-			new TrackPrice({ dbModel, desiredPrice, urls });
+			new TrackPrice({ desiredPrice, urls });
 		}, interval);
 	};
 	checkConnection();
