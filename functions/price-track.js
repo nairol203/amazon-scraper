@@ -33,6 +33,8 @@ class trackPrice {
 
 		const page = await browser.newPage();
 
+		page.setUserAgent('Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/100.0.4896.60 Safari/537.36');
+
 		for (const { name, url, img_url } of this.items) {
 			await page.goto(url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
