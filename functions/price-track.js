@@ -74,6 +74,7 @@ class trackPrice {
 						name,
 						url,
 						price,
+						desiredPrice: this.desiredPrice || null,
 						date: new Date(),
 						$push: {
 							prices: [
@@ -113,6 +114,7 @@ class trackPrice {
 					},
 					{
 						price,
+						desiredPrice: this.desiredPrice || null,
 						date: new Date(),
 						$push: {
 							prices: [

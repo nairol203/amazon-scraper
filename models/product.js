@@ -29,6 +29,9 @@ const product = mongoose.Schema({
 	date: reqDate,
 	lastNoti: reqDate,
 	price: reqNumber,
+	desiredPrice: {
+		type: Number,
+	},
 	prices: [prices],
 });
 
