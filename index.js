@@ -84,3 +84,16 @@ AutoCheck({
 	],
 	interval: long,
 });
+
+// HUANUO Monitor Halterung
+AutoCheck({
+	desiredPrice: 60,
+	items: [
+		{
+			name: 'HUANUO Monitor Halterung',
+			url: 'https://www.amazon.de/dp/B07ZNGT8K4',
+			img_url: 'https://m.media-amazon.com/images/I/71oPdIcALXL._AC_SL1500_.jpg',
+		},
+	],
+	interval: short,
+});
