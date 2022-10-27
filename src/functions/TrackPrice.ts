@@ -32,6 +32,7 @@ export default class TrackPrice {
 			const evaluatedPrice = this.evaluatePrice(scrapedData);
 			await this.updateDatabase(evaluatedPrice);
 		} catch (error) {
+			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Error occured while checking ${this.name}.`);
 		} finally {
 			await got(`${hostUrl}/api/revalidate`);
