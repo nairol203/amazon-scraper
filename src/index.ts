@@ -8,18 +8,15 @@ const hourInMs = 3.6e6;
 async function main() {
 	await connectToMongo();
 	const products = await productModel.find({});
+
 	console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Setting up Price Check with Interval of 1 Hour for ${products.length} Items...`);
 
 	setTimeout(() => {
-		for (const product of products) {
-			new TrackPrice(product);
-		}
+		new TrackPrice(products);
 	}, 5000);
 
 	setInterval(() => {
-		for (const product of products) {
-			new TrackPrice(product);
-		}
+		new TrackPrice(products);
 	}, hourInMs);
 }
 

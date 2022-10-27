@@ -11,51 +11,48 @@ const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
 export default class TrackPrice {
-	private desiredPrice: number = 0;
-	private name: string;
-	private url: string;
-	private img_url: string;
+	private products: IProduct[];
 
-	constructor({ desiredPrice, name, url, img_url }: IProduct) {
-		this.desiredPrice = desiredPrice ?? this.desiredPrice;
-		this.name = name;
-		this.url = url;
-		this.img_url = img_url;
+	constructor(products: IProduct[]) {
+		this.products = products;
 		this.main();
 	}
 
 	async main() {
-		try {
-			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${this.name}...`);
-
-			const scrapedData = await this.scrapeData();
-			const evaluatedPrice = this.evaluatePrice(scrapedData);
-			await this.updateDatabase(evaluatedPrice);
-		} catch (error) {
-			console.error(error);
-			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Error occured while checking ${this.name}.`);
-		} finally {
-			await got(`${hostUrl}/api/revalidate`);
-			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${this.name}.`);
-		}
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${this.products.length} products...`);
+		await this.scrapeData();
+		console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Finished Price Check for ${this.products.length} products.`);
 	}
 
 	async scrapeData() {
 		const browser = await puppeteer.launch({
 			headless: true,
-			executablePath: '/usr/bin/chromium-browser',
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
+			// executablePath: '/usr/bin/chromium-browser',
+			// args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		const page = await browser.newPage();
 
 		page.setUserAgent(userAgent);
 
-		await page.goto(this.url);
-		const pageData = await page.evaluate(() => document.documentElement.innerHTML);
-		await browser.close();
+		for (const product of this.products) {
+			try {
+				console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting Price Check for ${product.name}...`);
 
-		return pageData;
+				await page.goto(product.url);
+				const pageData = await page.evaluate(() => document.documentElement.innerHTML);
+				const evaluatedPrice = this.evaluatePrice(pageData);
+				await this.updateDatabase(product, evaluatedPrice);
+			} catch (error) {
+				// console.error(error);
+				console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Error occured while checking ${product.name}.`);
+			} finally {
+				await got(`${hostUrl}/api/revalidate`);
+				console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Checked ${product.name}.`);
+			}
+		}
+
+		await browser.close();
 	}
 
 	evaluatePrice(scrapedData: string) {
@@ -67,17 +64,17 @@ export default class TrackPrice {
 		return isNaN(price) ? null : price;
 	}
 
-	async updateDatabase(evaluatedPrice: number | null) {
+	async updateDatabase(product: IProduct, evaluatedPrice: number | null) {
 		const now = new Date();
-		const savedItem = await productModel.findOne({ name: this.name });
+		const savedItem = await productModel.findOne({ name: product.name });
 
 		if (savedItem?.price === undefined) {
 			/**
 			 * First time update
 			 */
 			await updateProduct({
-				name: this.name,
-				url: this.url,
+				name: product.name,
+				url: product.url,
 				price: evaluatedPrice,
 				date: now,
 				$push: {
@@ -94,7 +91,7 @@ export default class TrackPrice {
 			 * Push the old price again
 			 */
 			await updateProduct({
-				name: this.name,
+				name: product.name,
 				$push: {
 					prices: [
 						{
@@ -108,7 +105,7 @@ export default class TrackPrice {
 			 * Push the new Price
 			 */
 			await updateProduct({
-				name: this.name,
+				name: product.name,
 				price: evaluatedPrice,
 				date: new Date(),
 				$push: {
@@ -125,26 +122,26 @@ export default class TrackPrice {
 			 * Only update the date (no price change)
 			 */
 			await updateProduct({
-				name: this.name,
+				name: product.name,
 				date: now,
 			});
 		}
 
-		if (evaluatedPrice && evaluatedPrice < this.desiredPrice) {
-			await this.sendDiscordNotification(evaluatedPrice);
+		if (evaluatedPrice && evaluatedPrice < (product.desiredPrice ?? 0)) {
+			await this.sendDiscordNotification(product, evaluatedPrice);
 		}
 	}
 
-	async sendDiscordNotification(evaluatedPrice: number) {
-		const savedItem = await productModel.findOne({ name: this.name });
+	async sendDiscordNotification(product: IProduct, evaluatedPrice: number) {
+		const savedItem = await productModel.findOne({ name: product.name });
 
 		const lastNotifiedDate = new Date(savedItem?.lastNoti || '').getTime();
 		const hasNotBeenNotifiedInThreshold = lastNotifiedDate + sevenDaysInMs < Date.now();
 
 		const embed = {
 			title: '🚨 Amazon Price Alert',
-			description: `Der Amazon Preis für [${this.name}](${this.url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${
-				this.url
+			description: `Der Amazon Preis für [${product.name}](${product.url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${
+				product.url
 			})\n\nEs werden für die nächsten ${
 				sevenDaysInMs / oneDayInMs
 			} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Preisentwicklungen findest auf https://nairol.me/price-check.`,
@@ -156,12 +153,12 @@ export default class TrackPrice {
 				},
 				{
 					name: 'Wunschpreis',
-					value: new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(this.desiredPrice),
+					value: new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(product.desiredPrice ?? 0),
 					inline: true,
 				},
 			],
 			thumbnail: {
-				url: this.img_url,
+				url: product.img_url,
 			},
 			color: 15258703,
 			footer: {
@@ -182,7 +179,7 @@ export default class TrackPrice {
 			});
 
 			await updateProduct({
-				name: this.name,
+				name: product.name,
 				lastNoti: new Date(),
 			});
 		}
