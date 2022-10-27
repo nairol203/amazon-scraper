@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import got from 'got/dist/source';
+import got from 'got';
 import puppeteer from 'puppeteer';
 import productModel, { IProduct } from '../models/productModel';
 import { updateProduct } from './helperFunctions';
@@ -42,8 +42,8 @@ export default class TrackPrice {
 	async scrapeData() {
 		const browser = await puppeteer.launch({
 			headless: true,
-			// executablePath: '/usr/bin/chromium-browser',
-			// args: ['--no-sandbox', '--disable-setuid-sandbox'],
+			executablePath: '/usr/bin/chromium-browser',
+			args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		const page = await browser.newPage();
