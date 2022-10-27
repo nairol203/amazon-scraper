@@ -4,6 +4,7 @@
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
+    "start": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
   "keywords": [],
@@ -13,7 +14,7 @@
     "cheerio": "^1.0.0-rc.10",
     "dotenv": "^16.0.0",
     "got": "^11.8.2",
-    "mongoose": "^6.0.4",
+    "mongoose": "^6.7.0",
     "puppeteer": "^19.2.0"
   }
 }
