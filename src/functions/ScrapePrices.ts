@@ -1,4 +1,4 @@
-import got from 'got';
+import axios from 'axios';
 import puppeteer from 'puppeteer';
 import { IProduct } from '../models/productModel';
 import ProcessProduct from './ProcessProduct';
@@ -16,8 +16,8 @@ export default class ScrapePrices {
 	async scrapeProducts() {
 		const browser = await puppeteer.launch({
 			headless: true,
-			executablePath: '/usr/bin/chromium-browser',
-			args: ['--no-sandbox', '--disable-setuid-sandbox'],
+			// executablePath: '/usr/bin/chromium-browser',
+			// args: ['--no-sandbox', '--disable-setuid-sandbox'],
 		});
 
 		const page = await browser.newPage();
@@ -42,7 +42,9 @@ export default class ScrapePrices {
 			}
 		}
 
-		await got(`${hostUrl}/api/revalidate`);
+		await axios(`${hostUrl}/api/revalidate`, {
+			method: 'GET',
+		});
 		await browser.close();
 	}
 }

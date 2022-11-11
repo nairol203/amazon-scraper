@@ -20,15 +20,15 @@ export interface IPrices {
 
 export interface IProduct {
 	name: string;
-	displayName?: string;
-	tag: string;
 	url: string;
 	img_url: string;
+	price: number | null;
+	prices: IPrices[];
+	desiredPrice?: number;
+	archived?: boolean;
 	date: Date;
 	lastNoti: Date;
-	price: number | null;
-	desiredPrice?: number;
-	prices: IPrices[];
+	tag: string;
 }
 
 const prices = new Schema({
@@ -38,13 +38,13 @@ const prices = new Schema({
 
 const product = new Schema({
 	name: reqString,
-	displayName: {
-		type: String,
-	},
 	tag: reqString,
 	url: reqString,
 	img_url: reqString,
 	date: reqDate,
+	archived: {
+		type: Boolean,
+	},
 	lastNoti: reqDate,
 	price: reqNumber,
 	desiredPrice: {

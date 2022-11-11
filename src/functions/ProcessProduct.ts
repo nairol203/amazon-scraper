@@ -1,5 +1,6 @@
+import axios from 'axios';
 import * as cheerio from 'cheerio';
-import got from 'got';
+import { APIEmbed } from 'discord-api-types/v10';
 import productModel, { IProduct } from '../models/productModel';
 import { updateProduct } from './helperFunctions';
 
@@ -23,9 +24,10 @@ export default class ProcessProduct {
 
 	evaluatePrice(scrapedData: string) {
 		const $ = cheerio.load(scrapedData);
-		const element = $('.a-offscreen');
+		const element = $('.a-price').find('.a-offscreen');
 		const prices = element.text().split('€');
 		const price = parseFloat(prices[0].replace(',', '.'));
+		// const imgUrl = $('.imgTagWrapper').find('img').attr('src');
 
 		this.evaluatedPrice = isNaN(price) ? null : price;
 	}
@@ -34,25 +36,9 @@ export default class ProcessProduct {
 		const now = new Date();
 		const savedItem = await productModel.findOne({ name: this.name });
 
-		if (savedItem?.price === undefined) {
-			/**
-			 * First time update
-			 */
-			await updateProduct({
-				name: this.name,
-				url: this.url,
-				price: this.evaluatedPrice,
-				date: now,
-				$push: {
-					prices: [
-						{
-							price: this.evaluatedPrice,
-							date: now,
-						},
-					],
-				},
-			});
-		} else if (savedItem.price != this.evaluatedPrice) {
+		if (!savedItem) throw new Error(`Product (${this.name}) not found in the Database`);
+
+		if (savedItem.price != this.evaluatedPrice) {
 			/**
 			 * Push the old price again
 			 */
@@ -101,16 +87,16 @@ export default class ProcessProduct {
 	async sendDiscordNotification() {
 		const savedItem = await productModel.findOne({ name: this.name });
 
-		const lastNotifiedDate = new Date(savedItem?.lastNoti || '').getTime();
+		const lastNotifiedDate = savedItem?.lastNoti ? new Date(savedItem?.lastNoti).getTime() : 0;
 		const hasNotBeenNotifiedInThreshold = lastNotifiedDate + sevenDaysInMs < Date.now();
 
-		const embed = {
+		const embed: APIEmbed = {
 			title: '🚨 Amazon Price Alert',
 			description: `Der Amazon Preis für [${this.name}](${this.url}) ist unter deinen Wunschpreis gefallen.\n\n🔗 [Ab zu Amazon!](${
 				this.url
 			})\n\nEs werden für die nächsten ${
 				sevenDaysInMs / oneDayInMs
-			} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Preisentwicklungen findest auf https://nairol.me/price-check.`,
+			} Tage keine Benachrichtigungen zu diesem Produkt versendet. Aktuelle Preisentwicklungen findest auf https://price.nairol.me.`,
 			fields: [
 				{
 					name: 'Aktueller Preis',
@@ -133,12 +119,15 @@ export default class ProcessProduct {
 			},
 		};
 
+		const message = {
+			content: 'Gute Neuigkeiten, <@&859771979845337098>!',
+			embeds: [embed],
+		};
+
 		if (hasNotBeenNotifiedInThreshold) {
-			await got.post(webhookUrl, {
-				body: JSON.stringify({
-					content: 'Gute Neuigkeiten, <@&859771979845337098>!',
-					embeds: [embed],
-				}),
+			await axios(webhookUrl, {
+				method: 'POST',
+				data: JSON.stringify(message),
 				headers: {
 					'content-type': 'application/json',
 				},
