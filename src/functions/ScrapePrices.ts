@@ -1,7 +1,6 @@
 import axios from 'axios';
 import puppeteer from 'puppeteer';
 import ProcessProduct from './ProcessProduct';
-// @ts-ignore
 import { Product } from '@prisma/client';
 
 const userAgent = process.env.USER_AGENT as string;
