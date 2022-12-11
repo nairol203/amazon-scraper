@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
+// @ts-ignore
 import { Product } from '@prisma/client';
 import { client } from '..';
 
