@@ -1,13 +1,17 @@
+import { PrismaClient } from '@prisma/client';
 import 'dotenv/config';
-import { connectToMongo } from './functions/connectToMongo';
 import ScrapePrices from './functions/ScrapePrices';
-import productModel from './models/productModel';
 
 const hourInMs = 3.6e6;
 
+export const client = new PrismaClient();
+
 (async () => {
-	await connectToMongo();
-	const products = (await productModel.find()).filter(product => !product.archived);
+	const products = await client.product.findMany({
+		where: {
+			archived: false,
+		},
+	});
 
 	console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Setting up Price Check with Interval of 1 Hour for ${products.length} Items...`);
 
