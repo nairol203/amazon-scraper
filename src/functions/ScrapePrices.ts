@@ -1,15 +1,15 @@
 import axios from 'axios';
 import puppeteer from 'puppeteer';
+import { IProduct } from '../models/productModel';
 import ProcessProduct from './ProcessProduct';
-import { Product } from '@prisma/client';
 
 const userAgent = process.env.USER_AGENT as string;
 const hostUrl = process.env.SERVER as string;
 
 export default class ScrapePrices {
-	private products: Product[];
+	private products: IProduct[];
 
-	constructor(products: Product[]) {
+	constructor(products: IProduct[]) {
 		this.products = products;
 	}
 
@@ -35,7 +35,7 @@ export default class ScrapePrices {
 				processProduct.evaluatePrice(pageData);
 				await processProduct.updateDatabase();
 			} catch (error) {
-				console.error(error);
+				// console.error(error);
 				console.log(
 					`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${this.products.length}] An Error occured while running Price Check`
 				);
