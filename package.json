@@ -1,5 +1,5 @@
 {
-	"name": "amazom-scraper",
+	"name": "amazon-scraper",
 	"version": "1.0.0",
 	"description": "Amazon Scraper can run on a Rasperry Pi and scrapes prices from Amazon, which are stored in a Prisma Database, hosted on Planetscale.",
 	"main": "./index.js",
