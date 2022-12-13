@@ -1,21 +1,70 @@
 import 'dotenv/config';
-import { connectToMongo } from './functions/connectToMongo';
-import ScrapePrices from './functions/ScrapePrices';
-import productModel from './models/productModel';
+import { PrismaClient, Product } from '@prisma/client';
+import * as cheerio from 'cheerio';
+import puppeteer from 'puppeteer';
 
-const hourInMs = 3.6e6;
+const client = new PrismaClient();
+const userAgent = process.env.USER_AGENT as string;
 
-(async () => {
-	await connectToMongo();
-	const products = (await productModel.find()).filter(product => !product.archived);
+async function scrapePrices() {
+	const products = await client.product.findMany({
+		where: {
+			archived: false,
+		},
+	});
 
-	console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Setting up Price Check with Interval of 1 Hour for ${products.length} Items...`);
+	const browser = await puppeteer.launch({
+		headless: true,
+		executablePath: '/usr/bin/chromium-browser',
+		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+	});
 
-	setTimeout(async () => {
-		await new ScrapePrices(products).scrapeProducts();
-	}, 5000);
+	const page = await browser.newPage();
 
-	setInterval(async () => {
-		await new ScrapePrices(products).scrapeProducts();
-	}, hourInMs);
-})();
+	page.setUserAgent(userAgent);
+
+	for (const [i, product] of products.entries()) {
+		try {
+			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`);
+
+			await page.goto(product.url);
+			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
+			const newPrice = evaluatePrice(pageData);
+			await updateDatabase(product, newPrice);
+		} catch (error) {
+			console.error(error);
+			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
+		}
+	}
+
+	await browser.close();
+}
+
+function evaluatePrice(scrapedData: string) {
+	const $ = cheerio.load(scrapedData);
+	const element = $('.a-price').find('.a-offscreen');
+	const prices = element.text().split('€');
+	const price = parseFloat(prices[0].replace(',', '.'));
+
+	return isNaN(price) ? null : price;
+}
+
+async function updateDatabase(product: Product, newPrice: null | number) {
+	if (product.price === newPrice) return;
+
+	await client.product.update({
+		where: {
+			id: product.id,
+		},
+		data: {
+			price: newPrice,
+			prices: {
+				create: {
+					price: newPrice,
+				},
+			},
+		},
+	});
+}
+
+scrapePrices();
