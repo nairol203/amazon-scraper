@@ -1,14 +1,19 @@
 {
-	"name": "price-alert",
+	"name": "amazom-scraper",
 	"version": "1.0.0",
-	"description": "",
+	"description": "Amazon Scraper can run on a Rasperry Pi and scrapes prices from Amazon, which are stored in a Prisma Database, hosted on Planetscale.",
 	"main": "./index.js",
 	"scripts": {
 		"start": "node index.js",
 		"dev": "nodemon index.ts"
 	},
-	"keywords": [],
-	"author": "",
+	"keywords": [
+		"puppeteer",
+		"amazon",
+		"scraper",
+		"prisma"
+	],
+	"author": "nairol203",
 	"license": "ISC",
 	"dependencies": {
 		"@prisma/client": "^4.7.1",
