@@ -12,7 +12,7 @@ Runs on a Rasperry Pi and scrapes prices from Amazon, which are stored in a Pris
 
 This would run every hour:
 
--   pm2 start index.js --cron "0 _/1 _ \* \*"
+-   pm2 start index.js --cron "0 */1 * * *"
 
 ## Any Questions?
 
