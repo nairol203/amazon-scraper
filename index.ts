@@ -6,7 +6,23 @@ import puppeteer from 'puppeteer';
 const client = new PrismaClient();
 const userAgent = process.env.USER_AGENT as string;
 
+async function flushPrices() {
+	await client.prices.deleteMany();
+	const products = await client.product.findMany({});
+	products.forEach(async product => {
+		await client.product.update({
+			where: {
+				id: product.id,
+			},
+			data: {
+				price: null,
+			},
+		});
+	});
+}
+
 async function scrapePrices() {
+	await flushPrices();
 	const products = await client.product.findMany({
 		where: {
 			archived: false,
@@ -30,7 +46,7 @@ async function scrapePrices() {
 			await page.goto(product.url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
 			const newPrice = evaluatePrice(pageData);
-			await updateDatabase(product, newPrice);
+			await updateDatabase(product, newPrice, product.price);
 		} catch (error) {
 			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
@@ -49,9 +65,28 @@ function evaluatePrice(scrapedData: string) {
 	return isNaN(price) ? null : price;
 }
 
-async function updateDatabase(product: Product, newPrice: null | number) {
+async function updateDatabase(product: Product, newPrice: null | number, oldPrice: null | number) {
 	if (product.price === newPrice) return;
 
+	/**
+	 * Push the old price again
+	 */
+	await client.product.update({
+		where: {
+			id: product.id,
+		},
+		data: {
+			prices: {
+				create: {
+					price: oldPrice,
+				},
+			},
+		},
+	});
+
+	/**
+	 * Push the new price
+	 */
 	await client.product.update({
 		where: {
 			id: product.id,
