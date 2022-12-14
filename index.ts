@@ -22,7 +22,6 @@ async function flushPrices() {
 }
 
 async function scrapePrices() {
-	await flushPrices();
 	const products = await client.product.findMany({
 		where: {
 			archived: false,
