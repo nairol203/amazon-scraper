@@ -6,20 +6,20 @@ import puppeteer from 'puppeteer';
 const client = new PrismaClient();
 const userAgent = process.env.USER_AGENT as string;
 
-async function flushPrices() {
-	await client.prices.deleteMany();
-	const products = await client.product.findMany({});
-	products.forEach(async product => {
-		await client.product.update({
-			where: {
-				id: product.id,
-			},
-			data: {
-				price: null,
-			},
-		});
-	});
-}
+// async function flushPrices() {
+// 	await client.prices.deleteMany();
+// 	const products = await client.product.findMany({});
+// 	products.forEach(async product => {
+// 		await client.product.update({
+// 			where: {
+// 				id: product.id,
+// 			},
+// 			data: {
+// 				price: null,
+// 			},
+// 		});
+// 	});
+// }
 
 async function scrapePrices() {
 	const products = await client.product.findMany({
@@ -35,8 +35,8 @@ async function scrapePrices() {
 	});
 
 	const page = await browser.newPage();
-
-	page.setUserAgent(userAgent);
+	await page.setDefaultNavigationTimeout(0);
+	await page.setUserAgent(userAgent);
 
 	for (const [i, product] of products.entries()) {
 		try {
