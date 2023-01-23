@@ -9,17 +9,18 @@ datasource db {
 }
 
 model Product {
-    id           String   @id @default(uuid())
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-    name         String
-    price        Float?
-    prices       Price[]
-    desiredPrice Float
-    url          String
-    imgUrl       String
-    tag          String?
-    archived     Boolean
+    id             String    @id @default(uuid())
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+    lastNotifiedAt DateTime?
+    name           String
+    price          Float?
+    prices         Price[]
+    desiredPrice   Float
+    url            String
+    imgUrl         String
+    tag            String?
+    archived       Boolean
 }
 
 model Price {
