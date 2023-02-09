@@ -8,6 +8,7 @@ import puppeteer from 'puppeteer';
 const client = new PrismaClient();
 const userAgent = process.env.USER_AGENT as string;
 const webhookUrl = process.env.WEBHOOK_URL as string;
+const webhookUrlForLogs = process.env.WEBHOOK_URL_FOR_LOGS as string;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
@@ -46,6 +47,15 @@ async function scrapePrices() {
 	for (const [i, product] of products.entries()) {
 		try {
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`);
+			await axios(webhookUrlForLogs, {
+				method: 'POST',
+				data: JSON.stringify({
+					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`,
+				}),
+				headers: {
+					'content-type': 'application/json',
+				},
+			});
 
 			await page.goto(product.url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
@@ -54,6 +64,15 @@ async function scrapePrices() {
 		} catch (error) {
 			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
+			await axios(webhookUrlForLogs, {
+				method: 'POST',
+				data: JSON.stringify({
+					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`,
+				}),
+				headers: {
+					'content-type': 'application/json',
+				},
+			});
 		}
 	}
 
