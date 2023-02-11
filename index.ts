@@ -28,6 +28,16 @@ async function flushPrices() {
 }
 
 async function scrapePrices() {
+	await axios(webhookUrlForLogs, {
+		method: 'POST',
+		data: JSON.stringify({
+			content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting...`,
+		}),
+		headers: {
+			'content-type': 'application/json',
+		},
+	});
+
 	const products = await client.product.findMany({
 		where: {
 			archived: false,
@@ -47,15 +57,6 @@ async function scrapePrices() {
 	for (const [i, product] of products.entries()) {
 		try {
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`);
-			await axios(webhookUrlForLogs, {
-				method: 'POST',
-				data: JSON.stringify({
-					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`,
-				}),
-				headers: {
-					'content-type': 'application/json',
-				},
-			});
 
 			await page.goto(product.url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
@@ -77,6 +78,15 @@ async function scrapePrices() {
 	}
 
 	await browser.close();
+	await axios(webhookUrlForLogs, {
+		method: 'POST',
+		data: JSON.stringify({
+			content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Finished!`,
+		}),
+		headers: {
+			'content-type': 'application/json',
+		},
+	});
 }
 
 function evaluatePrice(scrapedData: string) {
