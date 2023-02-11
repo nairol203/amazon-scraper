@@ -68,7 +68,9 @@ async function scrapePrices() {
 			await axios(webhookUrlForLogs, {
 				method: 'POST',
 				data: JSON.stringify({
-					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`,
+					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${
+						products.length
+					}] An Error occured while running Price Check <@255739211112513536>`,
 				}),
 				headers: {
 					'content-type': 'application/json',
