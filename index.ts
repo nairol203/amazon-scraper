@@ -3,6 +3,7 @@ import { PrismaClient, Product } from '@prisma/client';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
+import fs from 'fs';
 import puppeteer from 'puppeteer';
 
 const client = new PrismaClient();
@@ -46,8 +47,8 @@ async function scrapePrices() {
 
 	const browser = await puppeteer.launch({
 		headless: true,
-		executablePath: '/usr/bin/chromium-browser',
-		args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		// executablePath: '/usr/bin/chromium-browser',
+		// args: ['--no-sandbox', '--disable-setuid-sandbox'],
 	});
 
 	const page = await browser.newPage();
@@ -62,33 +63,17 @@ async function scrapePrices() {
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
 			const newPrice = evaluatePrice(pageData);
 			await updateDatabase(product, newPrice);
+
+			fs.appendFileSync('./report.txt', `success ${new Date().toISOString()} ${product.name}\n`);
+			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Successfully updated daily report file.`);
 		} catch (error) {
 			console.error(error);
+			fs.appendFileSync('./report.txt', `failed ${new Date().toISOString()} ${product.name}\n`);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
-			await axios(webhookUrlForLogs, {
-				method: 'POST',
-				data: JSON.stringify({
-					content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${
-						products.length
-					}] An Error occured while running Price Check <@255739211112513536>`,
-				}),
-				headers: {
-					'content-type': 'application/json',
-				},
-			});
 		}
 	}
 
 	await browser.close();
-	await axios(webhookUrlForLogs, {
-		method: 'POST',
-		data: JSON.stringify({
-			content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Finished!`,
-		}),
-		headers: {
-			'content-type': 'application/json',
-		},
-	});
 }
 
 function evaluatePrice(scrapedData: string) {
