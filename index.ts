@@ -9,7 +9,6 @@ import puppeteer from 'puppeteer';
 const client = new PrismaClient();
 const userAgent = process.env.USER_AGENT as string;
 const webhookUrl = process.env.WEBHOOK_URL as string;
-const webhookUrlForLogs = process.env.WEBHOOK_URL_FOR_LOGS as string;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
@@ -29,16 +28,6 @@ async function flushPrices() {
 }
 
 async function scrapePrices() {
-	await axios(webhookUrlForLogs, {
-		method: 'POST',
-		data: JSON.stringify({
-			content: `${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Starting...`,
-		}),
-		headers: {
-			'content-type': 'application/json',
-		},
-	});
-
 	const products = await client.product.findMany({
 		where: {
 			archived: false,
@@ -47,8 +36,8 @@ async function scrapePrices() {
 
 	const browser = await puppeteer.launch({
 		headless: true,
-		// executablePath: '/usr/bin/chromium-browser',
-		// args: ['--no-sandbox', '--disable-setuid-sandbox'],
+		executablePath: '/usr/bin/chromium-browser',
+		args: ['--no-sandbox', '--disable-setuid-sandbox'],
 	});
 
 	const page = await browser.newPage();
