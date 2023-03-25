@@ -6,7 +6,6 @@ import { APIEmbed } from 'discord-api-types/v10';
 import puppeteer from 'puppeteer';
 
 const client = new PrismaClient();
-const userAgent = process.env.USER_AGENT as string;
 const webhookUrl = process.env.WEBHOOK_URL as string;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
@@ -41,7 +40,6 @@ async function scrapePrices() {
 
 	const page = await browser.newPage();
 	page.setDefaultNavigationTimeout(0);
-	await page.setUserAgent(userAgent);
 
 	for (const [i, product] of products.entries()) {
 		try {
@@ -51,6 +49,7 @@ async function scrapePrices() {
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
 			const newPrice = evaluatePrice(pageData);
 			await updateDatabase(product, newPrice);
+			console.log(pageData, newPrice);
 		} catch (error) {
 			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
