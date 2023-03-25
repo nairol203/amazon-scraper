@@ -3,7 +3,6 @@ import { PrismaClient, Product } from '@prisma/client';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
-import fs from 'fs';
 import puppeteer from 'puppeteer';
 
 const client = new PrismaClient();
@@ -41,7 +40,7 @@ async function scrapePrices() {
 	});
 
 	const page = await browser.newPage();
-	await page.setDefaultNavigationTimeout(0);
+	page.setDefaultNavigationTimeout(0);
 	await page.setUserAgent(userAgent);
 
 	for (const [i, product] of products.entries()) {
@@ -53,11 +52,9 @@ async function scrapePrices() {
 			const newPrice = evaluatePrice(pageData);
 			await updateDatabase(product, newPrice);
 
-			fs.appendFileSync('./report.txt', `success ${new Date().toISOString()} ${product.name}\n`);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Successfully updated daily report file.`);
 		} catch (error) {
 			console.error(error);
-			fs.appendFileSync('./report.txt', `failed ${new Date().toISOString()} ${product.name}\n`);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
 		}
 	}
