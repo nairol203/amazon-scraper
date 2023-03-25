@@ -49,7 +49,6 @@ async function scrapePrices() {
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
 			const newPrice = evaluatePrice(pageData);
 			await updateDatabase(product, newPrice);
-			console.log(pageData, newPrice);
 		} catch (error) {
 			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
