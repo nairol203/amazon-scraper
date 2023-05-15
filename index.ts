@@ -7,6 +7,7 @@ import puppeteer from 'puppeteer';
 
 const client = new PrismaClient();
 const webhookUrl = process.env.WEBHOOK_URL as string;
+const userAgent = process.env.USER_AGENT;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
@@ -39,7 +40,8 @@ async function scrapePrices() {
 	});
 
 	const page = await browser.newPage();
-	page.setDefaultNavigationTimeout(0);
+
+	await page.setUserAgent(userAgent ?? 'Mozilla/5.0 (Windows; U; Windows NT 10.5;; en-US) Gecko/20100101 Firefox/71.3');
 
 	for (const [i, product] of products.entries()) {
 		try {
@@ -48,6 +50,12 @@ async function scrapePrices() {
 			await page.goto(product.url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
 			const newPrice = evaluatePrice(pageData);
+
+			if (newPrice === 'ip-blocked') {
+				console.error('We got IP Blocked. Aborting, no data!');
+				return;
+			}
+
 			await updateDatabase(product, newPrice);
 		} catch (error) {
 			console.error(error);
@@ -60,8 +68,12 @@ async function scrapePrices() {
 
 function evaluatePrice(scrapedData: string) {
 	const $ = cheerio.load(scrapedData);
-	const element = $('.a-price').find('.a-offscreen');
-	const prices = element.text().split('€');
+	const productTitle = $('#productTitle');
+
+	if (!productTitle.text().length) return 'ip-blocked';
+
+	const priceElement = $('.a-price').find('.a-offscreen');
+	const prices = priceElement.text().split('€');
 	const price = parseFloat(prices[0].replace(',', '.'));
 
 	return isNaN(price) ? null : price;
