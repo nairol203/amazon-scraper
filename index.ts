@@ -53,7 +53,7 @@ async function scrapePrices() {
 
 			if (newPrice === 'ip-blocked') {
 				console.error('We got IP Blocked. Aborting, no data!');
-				return;
+				break;
 			}
 
 			await updateDatabase(product, newPrice);
