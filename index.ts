@@ -1,37 +1,19 @@
 import 'dotenv/config';
-import { PrismaClient, Product } from '@prisma/client';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
 import puppeteer from 'puppeteer';
+import { db } from './db/db';
+import { Product, prices, products as productsSchema } from './db/schema';
+import { eq } from 'drizzle-orm';
 
-const client = new PrismaClient();
 const webhookUrl = process.env.WEBHOOK_URL as string;
 const userAgent = process.env.USER_AGENT;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
-async function flushPrices() {
-	await client.price.deleteMany();
-	const products = await client.product.findMany({});
-	products.forEach(async product => {
-		await client.product.update({
-			where: {
-				id: product.id,
-			},
-			data: {
-				price: null,
-			},
-		});
-	});
-}
-
 async function scrapePrices() {
-	const products = await client.product.findMany({
-		where: {
-			archived: false,
-		},
-	});
+	const products = await db.select().from(productsSchema).where(eq(productsSchema.archived, false));
 
 	const browser = await puppeteer.launch({
 		headless: true,
@@ -82,18 +64,16 @@ function evaluatePrice(scrapedData: string) {
 async function updateDatabase(product: Product, newPrice: null | number) {
 	if (product.price === newPrice) return;
 
-	await client.product.update({
-		where: {
-			id: product.id,
-		},
-		data: {
+	await db
+		.update(productsSchema)
+		.set({
 			price: newPrice,
-			prices: {
-				create: {
-					price: newPrice,
-				},
-			},
-		},
+		})
+		.where(eq(productsSchema.id, product.id));
+
+	await db.insert(prices).values({
+		price: newPrice,
+		productId: product.id,
 	});
 
 	if (newPrice && newPrice < product.desiredPrice) {
@@ -148,14 +128,12 @@ async function sendNotification(product: Product, newPrice: null | number) {
 			},
 		});
 
-		await client.product.update({
-			where: {
-				id: product.id,
-			},
-			data: {
+		await db
+			.update(productsSchema)
+			.set({
 				lastNotifiedAt: new Date(),
-			},
-		});
+			})
+			.where(eq(productsSchema.id, product.id));
 	}
 }
 
