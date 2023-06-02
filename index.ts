@@ -2,8 +2,8 @@ import 'dotenv/config';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
 import puppeteer from 'puppeteer';
-import { db } from './db/db';
-import { Product, prices, products as productsSchema } from './db/schema';
+import { db } from './db/db.js';
+import { Product, prices, products as productsSchema } from './db/schema.js';
 import { eq } from 'drizzle-orm';
 
 const webhookUrl = process.env.WEBHOOK_URL as string;

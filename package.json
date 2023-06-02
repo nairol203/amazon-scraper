@@ -1,8 +1,8 @@
 {
 	"name": "amazon-scraper",
 	"version": "1.0.0",
-	"description": "Amazon Scraper can run on a Rasperry Pi and scrapes prices from Amazon, which are stored in a Prisma Database, hosted on Planetscale.",
-	"main": "./index.js",
+	"description": "Amazon Scraper can run on a Rasperry Pi and scrapes prices from Amazon, which are stored in a MySQL Database, hosted on Planetscale.",
+	"type": "module",
 	"scripts": {
 		"start": "node index.js",
 		"dev": "nodemon index.ts"
@@ -11,20 +11,16 @@
 		"puppeteer",
 		"amazon",
 		"scraper",
-		"prisma"
+		"drizzle"
 	],
 	"author": "nairol203",
 	"license": "ISC",
 	"dependencies": {
+		"@planetscale/database": "^1.7.0",
 		"cheerio": "^1.0.0-rc.10",
 		"discord-api-types": "^0.37.29",
 		"dotenv": "^16.0.0",
 		"drizzle-orm": "^0.26.5",
 		"puppeteer": "^19.6.0"
-	},
-	"devDependencies": {
-		"nodemon": "^2.0.20",
-		"ts-node": "^10.9.1",
-		"typescript": "^4.8.4"
 	}
 }

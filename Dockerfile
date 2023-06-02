@@ -11,8 +11,6 @@ RUN npm ci --omit=dev \
 
 COPY . .
 
-RUN npx prisma generate
-
 RUN tsc
 
 RUN npm uninstall typescript
