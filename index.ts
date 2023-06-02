@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { APIEmbed } from 'discord-api-types/v10';
 import puppeteer from 'puppeteer';
@@ -120,9 +119,9 @@ async function sendNotification(product: Product, newPrice: null | number) {
 	};
 
 	if (hasNotBeenNotifiedInThreshold) {
-		await axios(webhookUrl, {
+		await fetch(webhookUrl, {
 			method: 'POST',
-			data: JSON.stringify(message),
+			body: JSON.stringify(message),
 			headers: {
 				'content-type': 'application/json',
 			},
