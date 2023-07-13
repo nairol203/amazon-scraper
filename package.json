@@ -20,7 +20,11 @@
 		"cheerio": "^1.0.0-rc.10",
 		"discord-api-types": "^0.37.29",
 		"dotenv": "^16.0.0",
-		"drizzle-orm": "^0.26.5",
+		"drizzle-orm": "^0.27.2",
 		"puppeteer": "^19.6.0"
+	},
+	"devDependencies": {
+		"drizzle-kit": "^0.19.4",
+		"ts-node": "^10.9.1"
 	}
 }

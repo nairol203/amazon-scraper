@@ -8,11 +8,14 @@ import { eq } from 'drizzle-orm';
 
 const webhookUrl = process.env.WEBHOOK_URL as string;
 const userAgent = process.env.USER_AGENT;
+
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
-async function scrapePrices() {
-	const products = await db.select().from(productsSchema).where(eq(productsSchema.archived, false));
+async function main() {
+	const products = await db.query.products.findMany({
+		where: eq(productsSchema.archived, false),
+	});
 
 	const browser = await puppeteer.launch({
 		headless: true,
@@ -30,14 +33,18 @@ async function scrapePrices() {
 
 			await page.goto(product.url);
 			const pageData = await page.evaluate(() => document.documentElement.innerHTML);
-			const newPrice = evaluatePrice(pageData);
+			const parsedData = parseScrapedData(pageData);
 
-			if (newPrice === 'ip-blocked') {
-				console.error('We got IP Blocked. Aborting, no data!');
-				break;
+			if (!parsedData.name) {
+				console.error(`We might got IP Blocked. Skipping "${product.name}"`);
+				continue;
 			}
 
-			await updateDatabase(product, newPrice);
+			await updateDatabase(product, parsedData);
+
+			if (parsedData.price && parsedData.price < product.desiredPrice) {
+				await sendNotification(product, parsedData.price);
+			}
 		} catch (error) {
 			console.error(error);
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] An Error occured while running Price Check`);
@@ -47,37 +54,34 @@ async function scrapePrices() {
 	await browser.close();
 }
 
-function evaluatePrice(scrapedData: string) {
+function parseScrapedData(scrapedData: string) {
 	const $ = cheerio.load(scrapedData);
-	const productTitle = $('#productTitle');
 
-	if (!productTitle.text().length) return 'ip-blocked';
+	const name = $('#productTitle').text().trim();
+	const imageUrl = $('#landingImage').attr('src');
+	const price = $('.priceToPay .a-offscreen').text();
 
-	const priceElement = $('.a-price').find('.a-offscreen');
-	const prices = priceElement.text().split('€');
-	const price = parseFloat(prices[0].replace(',', '.'));
+	const formattedPrice = price.slice(0, price.indexOf('€')).replace(',', '.');
+	const parsedPrice = parseFloat(formattedPrice);
+	const safePrice = isNaN(parsedPrice) ? null : parsedPrice;
 
-	return isNaN(price) ? null : price;
+	return { name, imageUrl, price: safePrice };
 }
 
-async function updateDatabase(product: Product, newPrice: null | number) {
-	if (product.price === newPrice) return;
-
-	await db
-		.update(productsSchema)
-		.set({
-			price: newPrice,
-		})
-		.where(eq(productsSchema.id, product.id));
+async function updateDatabase(
+	product: Product,
+	scrapedData: {
+		name: string;
+		imageUrl: string | undefined;
+		price: number | null;
+	}
+) {
+	if (product.price === scrapedData.price) return;
 
 	await db.insert(prices).values({
-		price: newPrice,
+		price: scrapedData.price,
 		productId: product.id,
 	});
-
-	if (newPrice && newPrice < product.desiredPrice) {
-		await sendNotification(product, newPrice);
-	}
 }
 
 async function sendNotification(product: Product, newPrice: null | number) {
@@ -136,4 +140,4 @@ async function sendNotification(product: Product, newPrice: null | number) {
 	}
 }
 
-scrapePrices();
+main();
