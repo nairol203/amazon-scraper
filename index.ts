@@ -12,6 +12,14 @@ const userAgent = process.env.USER_AGENT;
 const sevenDaysInMs = 6.048e8;
 const oneDayInMs = 8.64e7;
 
+function calcTimeRange(minInMs: number, maxInMs: number) {
+	return Math.random() * (maxInMs - minInMs) + minInMs;
+}
+
+function wait(timeInMs: number): Promise<void> {
+	return new Promise(resolve => setTimeout(resolve, timeInMs));
+}
+
 async function main() {
 	const products = await db.query.products.findMany({
 		where: eq(productsSchema.archived, false),
@@ -29,6 +37,13 @@ async function main() {
 
 	for (const [i, product] of products.entries()) {
 		try {
+			const timeToWaitInMs = calcTimeRange(20_000, 120_000);
+			const dateToContinue = new Date(Date.now() + timeToWaitInMs).toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' });
+			console.log(
+				`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > Waiting until ${dateToContinue} (${Math.round(timeToWaitInMs / 1000)}s) to continue.`
+			);
+			await wait(timeToWaitInMs);
+
 			console.log(`${new Date().toLocaleTimeString('de-DE', { timeZone: 'Europe/Berlin' })} > [${i + 1}/${products.length}] ${product.name}`);
 
 			await page.goto(product.url);
